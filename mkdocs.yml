@@ -42,12 +42,16 @@ markdown_extensions:
 nav:
   - index.md
   - ideation-mindmap.md
-  - Diagrams:
-    - diagrams/wrap_aens_names.md
-    - diagrams/update_pointers.md
-    - diagrams/revoke_aens_names.md
-    - diagrams/transfer_aens_names.md
-    - diagrams/unwrap_aens_names.md
-    - diagrams/reward_users.md
-    - diagrams/extend_aens_names.md
+  - Sequence Diagrams:
+    - Selected actions:
+      - diagrams/wrap_aens_names.md
+      - diagrams/update_pointers.md
+      - diagrams/revoke_aens_names.md
+      - diagrams/transfer_aens_names.md
+      - diagrams/unwrap_aens_names.md
+      - diagrams/reward_users.md
+      - diagrams/extend_aens_names.md
+      - diagrams/transfer_nfts.md
+      - diagrams/burn_nfts.md
+    - diagrams/full-example-sequence.md
   - sponsors.md

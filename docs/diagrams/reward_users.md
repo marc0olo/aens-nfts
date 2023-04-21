@@ -57,3 +57,22 @@ sequenceDiagram
     NFT owner ->> NFT Contract: 1) removeNftConfig: nft_id
     Note left of NFT Contract: deactivates NFT specific config
 ```
+
+## Deposit to reward pool
+
+```mermaid
+sequenceDiagram
+    actor Any user
+    Any user ->> NFT Contract: 1) depositToRewardPool
+    Note left of NFT Contract: adds the amount of ættos sent to the reward pool of an account
+```
+
+## Withdraw reward balance
+
+```mermaid
+sequenceDiagram
+    actor Any user
+    Any user ->> NFT Contract: 1) WithdrawFromRewardPool: option(amount)
+    Note left of NFT Contract: removes the provided amount (ættios) from the reward pool of an account
+    Note left of NFT Contract: if no amount is provided, the complete balance in reward pool will be withdrawn
+```
