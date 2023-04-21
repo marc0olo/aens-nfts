@@ -284,14 +284,43 @@
       
       
         <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-          Diagrams
+          Sequence Diagrams
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
-          Diagrams
+          Sequence Diagrams
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Selected actions
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Selected actions
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -439,6 +468,20 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#deposit-to-reward-pool" class="md-nav__link">
+    Deposit to reward pool
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#withdraw-reward-balance" class="md-nav__link">
+    Withdraw reward balance
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -456,6 +499,55 @@
     <li class="md-nav__item">
       <a href="../extend_aens_names/" class="md-nav__link">
         Extend AENS names
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../transfer_nfts/" class="md-nav__link">
+        Transfer NFTs
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../burn_nfts/" class="md-nav__link">
+        Explicit Burn of NFTs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../full-example-sequence/" class="md-nav__link">
+        Full example sequence
       </a>
     </li>
   
@@ -544,6 +636,20 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#deposit-to-reward-pool" class="md-nav__link">
+    Deposit to reward pool
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#withdraw-reward-balance" class="md-nav__link">
+    Withdraw reward balance
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -600,6 +706,17 @@
     actor NFT owner
     NFT owner -&gt;&gt; NFT Contract: 1) removeNftConfig: nft_id
     Note left of NFT Contract: deactivates NFT specific config</code></pre>
+<h2 id="deposit-to-reward-pool">Deposit to reward pool</h2>
+<pre class="mermaid"><code>sequenceDiagram
+    actor Any user
+    Any user -&gt;&gt; NFT Contract: 1) depositToRewardPool
+    Note left of NFT Contract: adds the amount of ættos sent to the reward pool of an account</code></pre>
+<h2 id="withdraw-reward-balance">Withdraw reward balance</h2>
+<pre class="mermaid"><code>sequenceDiagram
+    actor Any user
+    Any user -&gt;&gt; NFT Contract: 1) WithdrawFromRewardPool: option(amount)
+    Note left of NFT Contract: removes the provided amount (ættios) from the reward pool of an account
+    Note left of NFT Contract: if no amount is provided, the complete balance in reward pool will be withdrawn</code></pre>
 
 
 
