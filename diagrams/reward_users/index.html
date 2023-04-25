@@ -284,43 +284,14 @@
       
       
         <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-          Sequence Diagrams
+          Single action sequences
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
-          Sequence Diagrams
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-      
-      
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
-      
-      
-      
-        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
-          Selected actions
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
-        <label class="md-nav__title" for="__nav_3_1">
-          <span class="md-nav__icon md-icon"></span>
-          Selected actions
+          Single action sequences
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -538,10 +509,11 @@
     </li>
   
 
-            
-          
-            
-              
+    
+      
+      
+      
+
   
   
   
@@ -552,10 +524,18 @@
     </li>
   
 
-            
-          
-        </ul>
-      </nav>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contract-interface/" class="md-nav__link">
+        Contract Interface
+      </a>
     </li>
   
 
@@ -714,7 +694,7 @@
 <h2 id="withdraw-reward-balance">Withdraw reward balance</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) WithdrawFromRewardPool: option(amount)
+    Any user -&gt;&gt; NFT Contract: 1) withdrawFromRewardPool: option(amount)
     Note left of NFT Contract: removes the provided amount (ættios) from the reward pool of an account
     Note left of NFT Contract: if no amount is provided, the complete balance in reward pool will be withdrawn</code></pre>
 
