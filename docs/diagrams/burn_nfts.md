@@ -11,6 +11,7 @@ Note:
 sequenceDiagram
     actor Any user
     Any user ->> NFT Contract: 1) burn: nft_id
+    Note left of NFT Contract: default burn entrypoint of AEX-141
     Note left of NFT Contract: removes all data associated with the NFT
     Note left of NFT Contract: burns the NFT
 ```

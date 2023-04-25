@@ -14,7 +14,5 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Any user
-    Any user ->> NFT Contract: 1) transferMultiple: Set(nft_id)
-    Note left of NFT Contract: removes all data associated with the NFTs
-    Note left of NFT Contract: burns the NFTs
+    Any user ->> NFT Contract: 1) transferMultiple: recipient, Set(nft_id)
 ```

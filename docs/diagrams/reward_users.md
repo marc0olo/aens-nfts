@@ -72,7 +72,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Any user
-    Any user ->> NFT Contract: 1) WithdrawFromRewardPool: option(amount)
+    Any user ->> NFT Contract: 1) withdrawFromRewardPool: option(amount)
     Note left of NFT Contract: removes the provided amount (ættios) from the reward pool of an account
     Note left of NFT Contract: if no amount is provided, the complete balance in reward pool will be withdrawn
 ```
