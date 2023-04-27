@@ -113,7 +113,7 @@ contract interface IAENSWrapping : IAEX141 =
 
     /// @notice revokes all AENS names wrapped in the NFT, removes metadata and burns the NFT
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
-    stateful entrypoint revokeMultiple : (int) => unit
+    stateful entrypoint revokeAll : (int) => unit
 
     /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
