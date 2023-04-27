@@ -632,13 +632,13 @@
 <span class="w">    </span><span class="c1">/// @return the NFT id</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrapAndMint</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">map</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
 
-<span class="w">    </span><span class="c1">/// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, extends all names</span>
+<span class="w">    </span><span class="c1">/// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to wrap the AENS name into</span>
 <span class="w">    </span><span class="c1">/// @param name the AENS name to wrap</span>
 <span class="w">    </span><span class="c1">/// @param delegation_sig the delegation signature for the name</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrapSingle</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, extends all names</span>
+<span class="w">    </span><span class="c1">/// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to wrap the AENS name into</span>
 <span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrapMultiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">map</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
@@ -688,31 +688,31 @@
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">revokeAll</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT</span>
+<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of name to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transferSingle</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT</span>
+<span class="w">    </span><span class="c1">/// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="c1">/// @param names the AENS names to transfer</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transferMultiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT, burns the old NFT</span>
+<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names, burns the old NFT</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transferAll</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT</span>
+<span class="w">    </span><span class="c1">/// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT, updates expiry of name to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
 <span class="w">    </span><span class="c1">/// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_old</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">claimSingleTransfer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT</span>
+<span class="w">    </span><span class="c1">/// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT, updates expiry of names to match expiry of already wrapped names</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
