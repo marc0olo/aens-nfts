@@ -24,7 +24,7 @@ sequenceDiagram
     AENS owner ->> NFT Contract: 1) wrapSingle: nft_id, name, delegation_signature
     Note left of NFT Contract: claims ownership of name
     Note left of NFT Contract: assigns name to NFT
-    Note left of NFT Contract: extends all names
+    Note left of NFT Contract: updates expiry of name to wrap to match expiry of names in nft_id
 ```
 
 ## Wrap multiple names into existing NFT
@@ -34,5 +34,5 @@ sequenceDiagram
     AENS owner ->> NFT Contract: 1) wrapMultiple: nft_id, map(name, delegation_signature)
     Note left of NFT Contract: claims ownership of names
     Note left of NFT Contract: assigns names to NFT
-    Note left of NFT Contract: extends all names
+    Note left of NFT Contract: updates expiry of names to wrap to match expiry of names in nft_id
 ```

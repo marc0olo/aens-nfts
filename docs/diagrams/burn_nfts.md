@@ -2,7 +2,7 @@
 
 Note:
 
-- Burning NFTs is only possible if the wrapped AENS names are expired
+- Burning NFTs is only possible if the wrapped AENS names are expired OR if the NFT is empty, meaning it does not wrap an AENS name
 - The burn entrypoint is part of the AEX-141 standard and can be called by any user
 
 ## Single

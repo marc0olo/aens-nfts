@@ -48,11 +48,12 @@ contract interface IAEX141 =
 ```sophia
 contract interface IAENSWrapping : IAEX141 =
 
-    record reward_config = 
+    record config = 
         { reward: int
-        , block_window: int
+        , reward_block_window: int
         , emergency_reward: int
-        , emergency_block_window : int }
+        , emergency_reward_block_window : int
+        , can_receive_from_others : bool }
 
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
@@ -121,7 +122,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param name the AENS name to transfer
     stateful entrypoint transferSingle : (int, int, string) => unit
 
-    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT
+    /// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names the AENS names to transfer
@@ -131,6 +132,19 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     stateful entrypoint transferAll : (int, int) => unit
+
+    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT
+    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
+    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
+    /// @param name the AENS name to transfer
+    /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_old
+    stateful entrypoint claimSingleTransfer : (int, int, string, signature) => unit
+
+    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT
+    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
+    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
+    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
+    stateful entrypoint claimMultipleTransfer : (int, int, map(string, signature)) => unit
 
     /// @notice transfers the AENS name back to the owner or to another defined recipient, updates metadata
     /// @param nft_id the id of the NFT that currently wraps the AENS name
@@ -149,20 +163,20 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param recipient the address that should receive the AENS name
     stateful entrypoint unwrapAll : (int, option(address)) => unit
 
-    /// @notice caller sets (activates) global rewards for extending AENS names of NFTs owned by the caller
-    /// @param reward_config the global reward config
-    stateful entrypoint setGlobalConfig : (reward_config) => unit
+    /// @notice caller sets global config for NFTs owned by the caller
+    /// @param config the global config
+    stateful entrypoint setGlobalConfig : (config) => unit
 
-    /// @notice caller removes (deactivates) global rewards for extending AENS names of NFTs owned by the caller
+    /// @notice caller removes global config for NFTs owned by the caller
     stateful entrypoint removeGlobalConfig : () => unit
 
-    /// @notice caller sets (activates) NFT specific rewards for extending AENS names wrapped into it
-    /// @param nft_id the global reward config
-    /// @param reward_config the nft specific reward config
-    stateful entrypoint setNftConfig : (int, reward_config) => unit
+    /// @notice caller sets NFT specific config
+    /// @param nft_id the id of the NFT to set the config
+    /// @param config the nft specific config
+    stateful entrypoint setNftConfig : (int, config) => unit
 
-    /// @notice caller removes (deactivates) NFT specific rewards for extending AENS names wrapped into it
-    /// @param nft_id the global reward config
+    /// @notice caller removes NFT specific config
+    /// @param nft_id the id of the NFT to remove the config from
     stateful entrypoint removeNftConfig : (int) => unit
 
     /// @notice caller deposits AE to his reward pool
@@ -171,6 +185,11 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice caller withdraws all AE or a specific amount from his reward pool
     /// @param amount the optional amount of AE to withdraw
     stateful entrypoint withdrawFromRewardPool : (option(int)) => unit
+
+    /// @notice calculates the reward based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner
+    /// @param nft_id the id of the NFT to extend
+    /// @return the estimated reward
+    entrypoint estimateReward : (int) => int
 
     /// @notice extends all AENS names wrapped in the NFT without getting a reward
     /// @param nft_id the id of the NFT that wraps the AENS names to extend
