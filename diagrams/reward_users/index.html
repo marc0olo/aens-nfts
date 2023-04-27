@@ -405,8 +405,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reward-config" class="md-nav__link">
-    Reward config
+  <a href="#config" class="md-nav__link">
+    Config
   </a>
   
 </li>
@@ -582,8 +582,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#reward-config" class="md-nav__link">
-    Reward config
+  <a href="#config" class="md-nav__link">
+    Config
   </a>
   
 </li>
@@ -654,16 +654,17 @@
 <p>The global reward-config is defined by an account and will be applied on all NFTs this account owns.</p>
 <p>NFT specific reward-config always overrules the global reward-config.</p>
 <p>When an NFT is transferred to another account, the NFT specific reward-config will be removed.</p>
-<h2 id="reward-config">Reward config</h2>
+<h2 id="config">Config</h2>
 <ul>
 <li><code>reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the regular <code>block_window</code></li>
 <li><code>block_window</code> the window (in keyblocks) before name expiration where the defined <code>reward</code> is paid</li>
 <li><code>emergency_reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the <code>emergency_block_window</code></li>
 <li><code>emergency_block_window</code> the window (in keyblocks) before name expiration where the defined <code>emergency_reward</code> is paid</li>
+<li><code>can_receive_from_others</code> defines if a users allows his NFTs to receive and wrap AENS names from others</li>
 </ul>
 <p><strong>Note</strong></p>
 <ul>
-<li><code>option(estimated_reward)</code> will be calculated based on the expiration date of the names wrapped in an NFT, considering the global reward-onfig (or the NFT specific reward-config if set) and the amount of Æ deposited by the NFT owner</li>
+<li><code>option(estimated_reward)</code> will be calculated based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner</li>
 <li>in case the deposited Æ amount of the NFT owner is lower than <code>reward</code> or <code>emergency_reward</code>, the remaining Æ are returned</li>
 </ul>
 <h2 id="set-global-reward-config">Set global reward config</h2>
