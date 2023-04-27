@@ -60,13 +60,13 @@ contract interface IAENSWrapping : IAEX141 =
     /// @return the NFT id
     stateful entrypoint wrapAndMint : (map(string, signature)) => int
 
-    /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, extends all names
+    /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param name the AENS name to wrap
     /// @param delegation_sig the delegation signature for the name
     stateful entrypoint wrapSingle : (int, string, signature) => unit
 
-    /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, extends all names
+    /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     stateful entrypoint wrapMultiple : (int, map(string, signature)) => unit
@@ -116,31 +116,31 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     stateful entrypoint revokeAll : (int) => unit
 
-    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT
+    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
     stateful entrypoint transferSingle : (int, int, string) => unit
 
-    /// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT
+    /// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names the AENS names to transfer
     stateful entrypoint transferMultiple : (int, int, Set.set(string)) => unit
 
-    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, extends all names wrapped in new NFT, burns the old NFT
+    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names, burns the old NFT
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     stateful entrypoint transferAll : (int, int) => unit
 
-    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT
+    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
     /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_old
     stateful entrypoint claimSingleTransfer : (int, int, string, signature) => unit
 
-    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT
+    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
