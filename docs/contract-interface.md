@@ -76,14 +76,14 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointer_key the key of the pointer
     /// @param pointer_value the object to point to (account, channel, contract, oracle)
-    stateful entrypoint addPointer : (int, string, string, pointee) => unit
+    stateful entrypoint addPointer : (int, string, string, AENS.pointee) => unit
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint addPointers : (int, string, map(string, pointee), bool) => unit
+    stateful entrypoint addPointers : (int, string, map(string, AENS.pointee), bool) => unit
 
     /// @notice removes a pointer of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -202,9 +202,9 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice transfers a set of NFTs to the desired recipient
     /// @param recipient the address to become new owner of the NFTs
     /// @param nft_ids the ids of the NFTs to transfer
-    stateful entrypoint transferMultiple : (address, Set.set(int)) => unit
+    stateful entrypoint transferMultipleNfts : (address, Set.set(int)) => unit
 
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn
-    stateful entrypoint burnMultiple : (Set.set(int)) => unit
+    stateful entrypoint burnMultipleNfts : (Set.set(int)) => unit
 ```
