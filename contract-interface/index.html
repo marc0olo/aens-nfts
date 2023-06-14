@@ -627,6 +627,21 @@
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward_block_window</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">can_receive_from_others</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">}</span>
 
+<span class="w">    </span><span class="c1">/// @notice returns the account address of the real owner</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return real owner</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_owner</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return nft_id</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_nft_id</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return nft_id and owner</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_nft_id_and_owner</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="ow">*</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
+
 <span class="w">    </span><span class="c1">/// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names</span>
 <span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
 <span class="w">    </span><span class="c1">/// @return the NFT id</span>
