@@ -4,6 +4,8 @@ include "./interfaces/IAEX141.aes"
 include "./interfaces/IAEX141NFTReceiver.aes"
 include "./interfaces/IAENSWrapping.aes"
 
+include "Pair.aes"
+
 main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     datatype metadata_type = URL | OBJECT_ID | MAP
@@ -27,6 +29,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , meta_info: meta_info
         , token_to_owners: map(int, address)
         , owners_to_tokens: map(address, Set.set(int))
+        , names_to_token_and_owner: map(string, int * address)
         , balances: map(address, int)
         , approvals: map(int, address)
         , operators: map(address, map(address, bool))
@@ -48,6 +51,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           meta_info = { name = "Wrapped AENS", symbol = "WAENS", base_url = None, metadata_type = MAP },
           token_to_owners = {},
           owners_to_tokens = {},
+          names_to_token_and_owner = {},
           balances = {},
           approvals = {},
           operators = {},
@@ -130,19 +134,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     // mintable extension
 
     stateful entrypoint mint(to: address, metadata: option(metadata), data: option(string)) : int =
-        require_caller_is_receipient(to)
         switch(metadata)
             None =>
-                let token_id = state.counter
-                put(state{ counter = state.counter + 1
-                    , total_supply = state.total_supply + 1
-                    , balances[to = 0] @balance = balance + 1
-                    , token_to_owners[token_id] = to
-                    , owners_to_tokens[to = Set.new()] @owners_tokens = Set.insert(token_id, owners_tokens)})
-                switch(invoke_nft_receiver(None, to, token_id, data))
-                    (true, false) => abort("SAFE_TRANSFER_FAILED")
-                    _ => Chain.event(Mint(to, token_id))
-                token_id
+                mint_internal(to, data)
             Some(_) => abort("MINTING_WITH_METADATA_NOT_ALLOWED")
 
     // burnable extension
@@ -158,11 +152,36 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     // AENSWrapping
 
+    /// @notice returns the account address of the real owner
+    /// @param name the name to lookup
+    /// @return real owner
+    entrypoint resolve_owner(name: string) : option(address) =
+        switch(Map.lookup(name, state.names_to_token_and_owner))
+            Some(v) => Some(Pair.snd(v))
+            None => None
+
+    /// @notice returns the nft id where the AENS name is wrapped into
+    /// @param name the name to lookup
+    /// @return nft_id
+    entrypoint resolve_nft_id(name: string) : option(int) =
+        switch(Map.lookup(name, state.names_to_token_and_owner))
+            Some(v) => Some(Pair.fst(v))
+            None => None
+
+    /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
+    /// @param name the name to lookup
+    /// @return nft_id and owner
+    entrypoint resolve_nft_id_and_owner(name: string) : option(int * address) =
+        Map.lookup(name, state.names_to_token_and_owner)
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id
-    stateful entrypoint wrapAndMint(names_delegation_sigs: map(string, signature)) =
-      0
+    stateful entrypoint wrapAndMint(names_delegation_sigs: map(string, signature)) : int =
+        let token_id = mint_internal(Call.caller, None)
+        let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
+        List.foreach(names_delegation_sigs_list, (val) => claim_and_assign(val, token_id))
+        token_id
 
     /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
@@ -376,6 +395,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     // internal helper functions
 
+    function get_metadata_map(metadata: metadata) : map(string, string) =
+      switch(metadata)
+          MetadataMap(v) => v
+
     function require_caller_is_receipient(recipient: address) =
         require(Call.caller == recipient, "CALLER_MUST_BE_RECIPIENT")
 
@@ -390,6 +413,28 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         switch(Map.lookup(token_id, state.token_to_owners))
             None => false
             Some(o) => o == a
+
+    stateful function claim_and_assign(name_delegation_sig: string * signature, token_id: int) =
+        let name = Pair.fst(name_delegation_sig)
+        AENS.transfer(Call.caller, Contract.address, name, signature = Pair.snd(name_delegation_sig))
+        let nft_metadata_map = get_metadata_map(Map.lookup_default(token_id, state.metadata, MetadataMap({})))
+        // adding name to the MetadataMap (value is irrelevant)
+        let updated_map = nft_metadata_map{[name] @ n = ""}
+        put(state{ metadata[token_id = MetadataMap({})] @nft_metadata = MetadataMap(updated_map) })
+        put(state{ names_to_token_and_owner[name] @token_owner = (token_id, Call.caller) })
+
+    stateful function mint_internal(to: address, data: option(string)) : int =
+        require_caller_is_receipient(to)
+        let token_id = state.counter
+        put(state{ counter = state.counter + 1
+            , total_supply = state.total_supply + 1
+            , balances[to = 0] @balance = balance + 1
+            , token_to_owners[token_id] = to
+            , owners_to_tokens[to = Set.new()] @owners_tokens = Set.insert(token_id, owners_tokens)})
+        switch(invoke_nft_receiver(None, to, token_id, data))
+            (true, false) => abort("SAFE_TRANSFER_FAILED")
+            _ => Chain.event(Mint(to, token_id))
+        token_id
 
     stateful function remove_approval(token_id: int) =
         if(Map.member(token_id, state.approvals))

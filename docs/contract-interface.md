@@ -55,6 +55,21 @@ contract interface IAENSWrapping : IAEX141 =
         , emergency_reward_block_window : int
         , can_receive_from_others : bool }
 
+    /// @notice returns the account address of the real owner
+    /// @param name the name to lookup
+    /// @return real owner
+    entrypoint resolve_owner : (string) => option(address)
+
+    /// @notice returns the nft id where the AENS name is wrapped into
+    /// @param name the name to lookup
+    /// @return nft_id
+    entrypoint resolve_nft_id : (string) => option(int)
+
+    /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
+    /// @param name the name to lookup
+    /// @return nft_id and owner
+    entrypoint resolve_nft_id_and_owner : (string) => option(int * address)
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id
