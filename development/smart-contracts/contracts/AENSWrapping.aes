@@ -30,6 +30,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , token_to_owners: map(int, address)
         , owners_to_tokens: map(address, Set.set(int))
         , names_to_token_and_owner: map(string, int * address)
+        , token_to_name_expiration: map(int, Chain.ttl)
+        , max_name_ttl: Chain.ttl
         , balances: map(address, int)
         , approvals: map(int, address)
         , operators: map(address, map(address, bool))
@@ -45,6 +47,13 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | Mint(address, int)
         // extension "burnable"
         | Burn(address, int)
+        // AENS Wrapping
+        // nft_id, owner, name, new_ttl
+        | NameWrap(int, address, string, int)
+        // nft_id, current_owner, name, recipient
+        | NameUnwrap(int, address, string, address)
+        // nft_id, caller, new_ttl
+        | NameExtend(int, address, int)
 
     stateful entrypoint init() =
         { owner = Contract.creator,
@@ -52,6 +61,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           token_to_owners = {},
           owners_to_tokens = {},
           names_to_token_and_owner = {},
+          token_to_name_expiration = {},
+          max_name_ttl = RelativeTTL(180_000),
           balances = {},
           approvals = {},
           operators = {},
@@ -174,27 +185,41 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     entrypoint resolve_nft_id_and_owner(name: string) : option(int * address) =
         Map.lookup(name, state.names_to_token_and_owner)
 
+    /// @notice returns the expiration height of names that are wrapped into the provided nft id
+    /// @param nft_id the NFT id
+    /// @return the (fixed) height where all names wrapped into the NFT will expire OR None if the NFT does not exist
+    entrypoint get_expiration_by_nft_id(nft_id: int) : option(int) =
+        switch(Map.lookup(nft_id, state.token_to_name_expiration))
+            None => None
+            Some(v) =>
+                let FixedTTL(height) = v
+                Some(height)
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id
-    stateful entrypoint wrapAndMint(names_delegation_sigs: map(string, signature)) : int =
+    stateful entrypoint wrap_and_mint(names_delegation_sigs: map(string, signature)) : int =
         let token_id = mint_internal(Call.caller, None)
         let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
-        List.foreach(names_delegation_sigs_list, (val) => claim_and_assign(val, token_id))
+        let RelativeTTL(ttl) = state.max_name_ttl
+        let name_expiration_height = Chain.block_height + ttl
+        List.foreach(names_delegation_sigs_list, (val) => claim_and_assign(val, token_id, name_expiration_height))
+        put(state{ token_to_name_expiration[token_id] @name_expiration = FixedTTL(name_expiration_height) })
         token_id
 
     /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param name the AENS name to wrap
     /// @param delegation_sig the delegation signature for the name
-    stateful entrypoint wrapSingle(nft_id: int, name: string, delegation_sig: signature) =
-      // TODO
-      ()
+    stateful entrypoint wrap_single(nft_id: int, name: string, delegation_sig: signature) =
+        require_authorized(nft_id)
+        let expiration_height = require_not_expired(nft_id)
+        claim_and_assign((name, delegation_sig), nft_id, expiration_height)
 
     /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint wrapMultiple(nft_id: int, names_delegation_sigs: map(string, signature)) =
+    stateful entrypoint wrap_multiple(nft_id: int, names_delegation_sigs: map(string, signature)) =
       // TODO
       ()
 
@@ -203,7 +228,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointer_key the key of the pointer
     /// @param pointer_value the object to point to (account, channel, contract, oracle)
-    stateful entrypoint addPointer(nft_id: int, name: string, pointer_key: string, pointer_value: AENS.pointee) =
+    stateful entrypoint add_pointer(nft_id: int, name: string, pointer_key: string, pointer_value: AENS.pointee) =
       // TODO
       ()
 
@@ -212,7 +237,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint addPointers(nft_id: int, name: string, pointers: map(string, AENS.pointee), keep_existing: bool) =
+    stateful entrypoint add_pointers(nft_id: int, name: string, pointers: map(string, AENS.pointee), keep_existing: bool) =
       // TODO
       ()
 
@@ -220,7 +245,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be removed
     /// @param pointer_key the key of the pointer
-    stateful entrypoint removePointer(nft_id: int, name: string, pointer_key: string) =
+    stateful entrypoint remove_pointer(nft_id: int, name: string, pointer_key: string) =
       // TODO
       ()
 
@@ -228,34 +253,34 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be removed
     /// @param pointer_keys a set of pointer keys
-    stateful entrypoint removePointers(nft_id: int, name: string, pointer_keys: Set.set(string)) =
+    stateful entrypoint remove_pointers(nft_id: int, name: string, pointer_keys: Set.set(string)) =
       // TODO
       ()
 
     /// @notice removes all pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be removed
-    stateful entrypoint removeAllPointers(nft_id: int, name: string) =
+    stateful entrypoint remove_all_pointers(nft_id: int, name: string) =
       // TODO
       ()
 
     /// @notice revokes a single AENS name wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name to revoke
-    stateful entrypoint revokeSingle(nft_id: int, name: string) =
+    stateful entrypoint revoke_single(nft_id: int, name: string) =
       // TODO
       ()
 
     /// @notice revokes multiple AENS names wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param names the AENS names to revoke
-    stateful entrypoint revokeMultiple(nft_id: int, names: Set.set(string)) =
+    stateful entrypoint revoke_multiple(nft_id: int, names: Set.set(string)) =
       // TODO
       ()
 
     /// @notice revokes all AENS names wrapped in the NFT, removes metadata and burns the NFT
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
-    stateful entrypoint revokeAll(nft_id: int) =
+    stateful entrypoint revoke_all(nft_id: int) =
       // TODO
       ()
 
@@ -263,7 +288,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
-    stateful entrypoint transferSingle(nft_id_old: int, nft_id_new: int, name: string) =
+    stateful entrypoint transfer_single(nft_id_old: int, nft_id_new: int, name: string) =
       // TODO
       ()
 
@@ -271,14 +296,14 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names the AENS names to transfer
-    stateful entrypoint transferMultiple(nft_id_old: int, nft_id_new: int, names: Set.set(string)) =
+    stateful entrypoint transfer_multiple(nft_id_old: int, nft_id_new: int, names: Set.set(string)) =
       // TODO
       ()
 
     /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names, burns the old NFT
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
-    stateful entrypoint transferAll(nft_id_old: int, nft_id_new: int) =
+    stateful entrypoint transfer_all(nft_id_old: int, nft_id_new: int) =
       // TODO
       ()
 
@@ -287,7 +312,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
     /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_old
-    stateful entrypoint claimSingleTransfer(nft_id_old: int, nft_id_new: int, name: string, delegation_sig: signature) =
+    stateful entrypoint claim_single_transfer(nft_id_old: int, nft_id_new: int, name: string, delegation_sig: signature) =
       // TODO
       ()
 
@@ -295,7 +320,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint claimMultipleTransfer(nft_id_old: int, nft_id_new: int, names_delegation_sigs: map(string, signature)) =
+    stateful entrypoint claim_multiple_transfer(nft_id_old: int, nft_id_new: int, names_delegation_sigs: map(string, signature)) =
       // TODO
       ()
 
@@ -303,7 +328,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT that currently wraps the AENS name
     /// @param name the AENS name to transfer
     /// @param recipient the address that should receive the AENS name
-    stateful entrypoint unwrapSingle(nft_id: int, name: string, recipient: option(address)) =
+    stateful entrypoint unwrap_single(nft_id: int, name: string, recipient: option(address)) =
       // TODO
       ()
 
@@ -311,80 +336,80 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT that currently wraps the AENS name
     /// @param names the AENS names to transfer
     /// @param recipient the address that should receive the AENS name
-    stateful entrypoint unwrapMultiple(nft_id: int, names: Set.set(string), recipient: option(address)) =
+    stateful entrypoint unwrap_multiple(nft_id: int, names: Set.set(string), recipient: option(address)) =
       // TODO
       ()
 
     /// @notice transfers all AENS names back to the owner or to another defined recipient, updates metadata, burns the NFT
     /// @param nft_id the id of the NFT that currently wraps the AENS name
     /// @param recipient the address that should receive the AENS name
-    stateful entrypoint unwrapAll(nft_id: int, recipient: option(address)) =
+    stateful entrypoint unwrap_all(nft_id: int, recipient: option(address)) =
       // TODO
       ()
 
     /// @notice caller sets global config for NFTs owned by the caller
     /// @param config the global config
-    stateful entrypoint setGlobalConfig(config: config) =
+    stateful entrypoint set_global_config(config: config) =
       // TODO
       ()
 
     /// @notice caller removes global config for NFTs owned by the caller
-    stateful entrypoint removeGlobalConfig() =
+    stateful entrypoint remove_global_config() =
       // TODO
       ()
 
     /// @notice caller sets NFT specific config
     /// @param nft_id the id of the NFT to set the config
     /// @param config the nft specific config
-    stateful entrypoint setNftConfig(nft_id: int, config: config) =
+    stateful entrypoint set_nft_config(nft_id: int, config: config) =
       // TODO
       ()
 
     /// @notice caller removes NFT specific config
     /// @param nft_id the id of the NFT to remove the config from
-    stateful entrypoint removeNftConfig(nft_id: int) =
+    stateful entrypoint remove_nft_config(nft_id: int) =
       // TODO
       ()
 
     /// @notice caller deposits AE to his reward pool
-    stateful entrypoint depositToRewardPool() =
+    stateful entrypoint deposit_to_reward_pool() =
       // TODO
       ()
 
     /// @notice caller withdraws all AE or a specific amount from his reward pool
     /// @param amount the optional amount of AE to withdraw
-    stateful entrypoint withdrawFromRewardPool(amount: option(int)) =
+    stateful entrypoint withdraw_from_reward_pool(amount: option(int)) =
       // TODO
       ()
 
     /// @notice calculates the reward based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner
     /// @param nft_id the id of the NFT to extend
     /// @return the estimated reward
-    entrypoint estimateReward(nft_id: int) =
+    entrypoint estimate_reward(nft_id: int) =
       0
 
     /// @notice extends all AENS names wrapped in the NFT without getting a reward
     /// @param nft_id the id of the NFT that wraps the AENS names to extend
-    stateful entrypoint extendAll(nft_id: int) =
+    stateful entrypoint extend_all(nft_id: int) =
       // TODO
       ()
 
     /// @notice extends all AENS names wrapped in the NFT and distributes a reward to the caller
     /// @param nft_id the id of the NFT that wraps the AENS names to extend
-    stateful entrypoint extendAllForReward(nft_id: int) =
+    stateful entrypoint extend_all_for_reward(nft_id: int) =
       // TODO
       ()
 
     /// @notice transfers a set of NFTs to the desired recipient
     /// @param recipient the address to become new owner of the NFTs
     /// @param nft_ids the ids of the NFTs to transfer
-    stateful entrypoint transferMultipleNfts(recipient: address, nft_ids: Set.set(int)) =
+    stateful entrypoint transfer_multiple_nfts(recipient: address, nft_ids: Set.set(int)) =
       // TODO
       ()
 
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn
-    stateful entrypoint burnMultipleNfts(nft_ids: Set.set(int)) =
+    stateful entrypoint burn_multiple_nfts(nft_ids: Set.set(int)) =
       // TODO
       ()
 
@@ -395,9 +420,15 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     // internal helper functions
 
-    function get_metadata_map(metadata: metadata) : map(string, string) =
-      switch(metadata)
-          MetadataMap(v) => v
+    function require_not_expired(nft_id: int) : int =
+        let FixedTTL(expiration_height) = Option.force(Map.lookup(nft_id, state.token_to_name_expiration))
+        require(expiration_height >= Chain.block_height, "NAMES_IN_NFT_EXPIRED")
+        expiration_height
+
+    // function require_name_exists(name: string) : string * AENS.name =
+    //     switch(AENS.lookup(name))
+    //         None => abort("NAME_NOT_EXISTS")
+    //         Some(v) => (name, v)
 
     function require_caller_is_receipient(recipient: address) =
         require(Call.caller == recipient, "CALLER_MUST_BE_RECIPIENT")
@@ -414,14 +445,26 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             None => false
             Some(o) => o == a
 
-    stateful function claim_and_assign(name_delegation_sig: string * signature, token_id: int) =
+    // function to_fixed_ttl(relative_ttl: Chain.ttl): Chain.ttl =
+    //     let RelativeTTL(ttl) = relative_ttl
+    //     FixedTTL(Chain.block_height + ttl)
+
+    stateful function claim_and_assign(name_delegation_sig: string * signature, token_id: int, expiration_height: int) =
         let name = Pair.fst(name_delegation_sig)
         AENS.transfer(Call.caller, Contract.address, name, signature = Pair.snd(name_delegation_sig))
-        let nft_metadata_map = get_metadata_map(Map.lookup_default(token_id, state.metadata, MetadataMap({})))
+        let MetadataMap(nft_metadata_map) = Map.lookup_default(token_id, state.metadata, MetadataMap({}))
         // adding name to the MetadataMap (value is irrelevant)
         let updated_map = nft_metadata_map{[name] @ n = ""}
         put(state{ metadata[token_id = MetadataMap({})] @nft_metadata = MetadataMap(updated_map) })
         put(state{ names_to_token_and_owner[name] @token_owner = (token_id, Call.caller) })
+        update_name_ttl(name, FixedTTL(expiration_height))
+        Chain.event(NameWrap(token_id, Call.caller, name, expiration_height))
+
+    /// @notice updates TTL of an AENS name
+    /// @param name the name to update
+    /// @param new_ttl the optional ttl to set
+    stateful function update_name_ttl(name: string, new_ttl: Chain.ttl) =
+        AENS.update(Contract.address, name, Some(new_ttl), None, None)
 
     stateful function mint_internal(to: address, data: option(string)) : int =
         require_caller_is_receipient(to)
