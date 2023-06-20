@@ -69,6 +69,14 @@ describe('AENSWrapping', () => {
     }
   }
 
+  function getExpectedNftMetadataMap(names) {
+    const nftMetadataMap = new Map();
+    for(const name of names) {
+      nftMetadataMap.set(name, "");
+    }
+    return nftMetadataMap;
+  }
+
   async function expectNameAttributesProtocol(names, expectedNameAttributes) {
     for (const name of names) {
       const nameInstance = await aeSdk.aensQuery(name);
@@ -96,6 +104,11 @@ describe('AENSWrapping', () => {
       const resolveNftIdDryRun = await contract.resolve_nft_id(name);
       assert.equal(resolveNftIdDryRun.decodedResult, tokenId);
     }
+  }
+
+  async function expectNftMetadataMap(nftId, expectedNftMetadataMap) {
+    let metadataMap = (await contract.metadata(nftId)).decodedResult.MetadataMap[0];
+    assert.deepEqual(metadataMap, expectedNftMetadataMap);
   }
 
   async function getDelegationSignatures(names, contractId) {
@@ -183,6 +196,28 @@ describe('AENSWrapping', () => {
       assert.equal(metadataMap.size, aensNames.length + 1);
       assert.isTrue(metadataMap.has(wrapSingleTestName));
       assert.equal(nameInstance.ttl, nftExpirationHeight);
+    });
+
+    it('wrap_multiple', async () => {
+      // mint an empty NFT
+      const mintTx = await contract.mint(aeSdk.selectedAddress);
+      console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
+
+      // claim names
+      await claimNames(aensNames);
+      const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+
+      // check before wrapping
+      await expectNftMetadataMap(1, new Map());
+      await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress })
+
+      const wrapMultipleTx = await contract.wrap_multiple(1, namesDelegationSigs);
+      console.log(`Gas used (wrap_multiple with ${aensNames.length} names): ${wrapMultipleTx.result.gasUsed}`);
+
+      // check after wrapping
+      const nftExpirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+      await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: nftExpirationHeight })
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
     });
   });
 });

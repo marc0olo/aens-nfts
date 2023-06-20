@@ -147,7 +147,13 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     stateful entrypoint mint(to: address, metadata: option(metadata), data: option(string)) : int =
         switch(metadata)
             None =>
-                mint_internal(to, data)
+                let token_id = mint_internal(to, data)
+                // init the name expiration to sync for the NFT
+                let RelativeTTL(ttl) = state.max_name_ttl
+                let name_expiration_height = Chain.block_height + ttl
+                put(state{ token_to_name_expiration[token_id] @name_expiration = FixedTTL(name_expiration_height) })
+                put(state{ metadata[token_id] @nft_metadata = MetadataMap({}) })
+                token_id
             Some(_) => abort("MINTING_WITH_METADATA_NOT_ALLOWED")
 
     // burnable extension
@@ -220,8 +226,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     stateful entrypoint wrap_multiple(nft_id: int, names_delegation_sigs: map(string, signature)) =
-      // TODO
-      ()
+      require_authorized(nft_id)
+      let expiration_height = require_not_expired(nft_id)
+      let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
+      List.foreach(names_delegation_sigs_list, (val) => claim_and_assign(val, nft_id, expiration_height))
 
     /// @notice adds / replaces a pointer of the AENS name while keeping existing pointers
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -455,7 +463,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         let MetadataMap(nft_metadata_map) = Map.lookup_default(token_id, state.metadata, MetadataMap({}))
         // adding name to the MetadataMap (value is irrelevant)
         let updated_map = nft_metadata_map{[name] @ n = ""}
-        put(state{ metadata[token_id = MetadataMap({})] @nft_metadata = MetadataMap(updated_map) })
+        put(state{ metadata[token_id] @nft_metadata = MetadataMap(updated_map) })
         put(state{ names_to_token_and_owner[name] @token_owner = (token_id, Call.caller) })
         update_name_ttl(name, FixedTTL(expiration_height))
         Chain.event(NameWrap(token_id, Call.caller, name, expiration_height))
