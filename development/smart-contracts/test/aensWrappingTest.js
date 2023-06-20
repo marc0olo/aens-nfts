@@ -219,5 +219,25 @@ describe('AENSWrapping', () => {
       await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: nftExpirationHeight })
       await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
     });
+
+    it('unwrap_single', async () => {
+      // prepare: claim and wrap names
+      await claimNames(aensNames);
+      const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+      await contract.wrap_and_mint(namesDelegationSigs);
+
+      // // check after wrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+      await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
+
+      // unwrap single name from nft
+      const unwrapSingleTx = await contract.unwrap_single(1, aensNames[0]);
+      console.log(`Gas used (unwrap_single): ${unwrapSingleTx.result.gasUsed}`);
+
+      // check after unwrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames.slice(1)));
+      await expectNameAttributesProtocol(aensNames.slice(1), { owner: contractAccountAddress });
+      await expectNameAttributesProtocol([aensNames[0]], { owner: aeSdk.selectedAddress });
+    });
   });
 });
