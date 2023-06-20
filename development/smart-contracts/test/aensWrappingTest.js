@@ -239,5 +239,43 @@ describe('AENSWrapping', () => {
       await expectNameAttributesProtocol(aensNames.slice(1), { owner: contractAccountAddress });
       await expectNameAttributesProtocol([aensNames[0]], { owner: aeSdk.selectedAddress });
     });
+
+    it('unwrap_multiple', async () => {
+      // prepare: claim and wrap names
+      await claimNames(aensNames);
+      const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+      await contract.wrap_and_mint(namesDelegationSigs);
+
+      // // check after wrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+      await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
+
+      // unwrap multiple names from nft
+      const unwrapMultipleTx = await contract.unwrap_multiple(1, aensNames);
+      console.log(`Gas used (unwrap_multiple): ${unwrapMultipleTx.result.gasUsed}`);
+
+      // check after unwrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(new Map()));
+      await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
+    });
+
+    it('unwrap_all', async () => {
+      // prepare: claim and wrap names
+      await claimNames(aensNames);
+      const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+      await contract.wrap_and_mint(namesDelegationSigs);
+
+      // // check after wrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+      await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
+
+      // unwrap multiple names from nft
+      const unwrapAllTx = await contract.unwrap_all(1);
+      console.log(`Gas used (unwrap_all): ${unwrapAllTx.result.gasUsed}`);
+
+      // check after unwrapping
+      await expectNftMetadataMap(1, getExpectedNftMetadataMap(new Map()));
+      await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
+    });
   });
 });
