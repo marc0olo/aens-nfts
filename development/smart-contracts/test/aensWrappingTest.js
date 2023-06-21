@@ -150,7 +150,7 @@ describe('AENSWrapping', () => {
           assert.equal(wrapAndMintTx.decodedEvents[i].args[0], 1);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[1], aeSdk.selectedAddress);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
-          assert.equal(wrapAndMintTx.decodedEvents[i].args[3], expectedTtl);        
+          assert.equal(wrapAndMintTx.decodedEvents[i].args[3], expectedTtl);
         }
   
         assert.equal(wrapAndMintTx.decodedEvents[aensNames.length].name, 'Mint');
@@ -255,7 +255,7 @@ describe('AENSWrapping', () => {
   
         // unwrap multiple names from nft
         const unwrapMultipleTx = await contract.unwrap_multiple(1, aensNames);
-        console.log(`Gas used (unwrap_multiple): ${unwrapMultipleTx.result.gasUsed}`);
+        console.log(`Gas used (unwrap_multiple with ${aensNames.length} names): ${unwrapMultipleTx.result.gasUsed}`);
   
         // check after unwrapping
         await expectNftMetadataMap(1, getExpectedNftMetadataMap(new Map()));
@@ -274,7 +274,7 @@ describe('AENSWrapping', () => {
   
         // unwrap multiple names from nft
         const unwrapAllTx = await contract.unwrap_all(1);
-        console.log(`Gas used (unwrap_all): ${unwrapAllTx.result.gasUsed}`);
+        console.log(`Gas used (unwrap_all for ${aensNames.length} names): ${unwrapAllTx.result.gasUsed}`);
   
         // check after unwrapping
         await expectNftMetadataMap(1, getExpectedNftMetadataMap(new Map()));
@@ -320,11 +320,96 @@ describe('AENSWrapping', () => {
         await expectNameOwnerContract(aensNames.slice(1), aeSdk.selectedAddress);
         await expectNameOwnerContract([aensNames[0]], otherAccount.address);
         await expectNameNftId(aensNames.slice(1), 1);
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap((aensNames.slice(1))));
         await expectNameNftId([aensNames[0]], 2);
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap((([aensNames[0]]))));
   
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames.slice(1), { owner: contractAccountAddress, ttl: expirationHeightNftOne });
         expectNameAttributesProtocol([aensNames[0]], { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
+      });
+
+      it('transfer_multiple', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+  
+        // prepare: mint an empty NFT on other account
+        const otherAccount = utils.getDefaultAccounts()[1];
+        const mintTx = await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount });
+        console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
+  
+        // checks after nft creation
+        let ownerDryRunTx = await contract.owner(1);
+        assert.equal(ownerDryRunTx.decodedResult, aeSdk.selectedAddress);
+        ownerDryRunTx = await contract.owner(2);
+        assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
+        await expectNameOwnerContract(aensNames, aeSdk.selectedAddress);
+        await expectNameNftId(aensNames, 1);
+  
+        // check TTL / expiration height of nft & names before transfer
+        const expirationHeightNftOne = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        const expirationHeightNftTwo = (await contract.get_expiration_by_nft_id(2)).decodedResult;
+        assert.notEqual(expirationHeightNftTwo, expirationHeightNftOne);
+        expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftOne });
+  
+        // transfer multiple names to another NFT
+        const transferMultipleTx = await contract.transfer_multiple(1, 2, aensNames);
+        console.log(`Gas used (transfer_multiple with ${aensNames.length} names): ${transferMultipleTx.result.gasUsed}`);
+
+        // check NameTransfer event
+        for(let i=0; i<aensNames.length; i++) {
+          assert.equal(transferMultipleTx.decodedEvents[i].name, 'NameTransfer');
+          assert.equal(transferMultipleTx.decodedEvents[i].args[0], 1);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[1], 2);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
+        }
+  
+        // check after transfer
+        await expectNftMetadataMap(1, new Map());
+        await expectNameOwnerContract(aensNames, otherAccount.address);
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNames));
+        await expectNameNftId(aensNames, 2);
+  
+        // check TTL / expiration height of nft & names after transfer
+        expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
+      });
+
+      it('transfer_all', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+  
+        // prepare: mint an empty NFT on other account
+        const otherAccount = utils.getDefaultAccounts()[1];
+        const mintTx = await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount });
+        console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
+  
+        // check TTL / expiration height of nft & names before transfer
+        const expirationHeightNftTwo = (await contract.get_expiration_by_nft_id(2)).decodedResult;
+  
+        // transfer multiple names to another NFT
+        const transferAllTx = await contract.transfer_all(1, 2);
+        console.log(`Gas used (transfer_all for ${aensNames.length} names): ${transferAllTx.result.gasUsed}`);
+
+        // check NameTransfer event
+        for(let i=0; i<aensNames.length; i++) {
+          assert.equal(transferAllTx.decodedEvents[i].name, 'NameTransfer');
+          assert.equal(transferAllTx.decodedEvents[i].args[0], 1);
+          assert.equal(transferAllTx.decodedEvents[i].args[1], 2);
+          assert.equal(transferAllTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
+        }
+
+        // check after transfer
+        await expectNftMetadataMap(1, new Map());
+        await expectNameOwnerContract(aensNames, otherAccount.address);
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNames));
+        await expectNameNftId(aensNames, 2);
+  
+        // check TTL / expiration height of nft & names after transfer
+        expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
     });
   });
