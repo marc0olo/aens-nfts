@@ -425,6 +425,9 @@ describe('AENSWrapping', () => {
         let ownerDryRunTx = await contract.owner(1);
         assert.equal(ownerDryRunTx.decodedResult, aeSdk.selectedAddress);
 
+        let resolveNftIdAndOwnerTxDryRun = await contract.resolve_nft_id_and_owner(aensNames[0]);
+        assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, aeSdk.selectedAddress]);
+
         // transfer NFT to other account
         const transferTx = await contract.transfer(otherAccount.address, 1);
         console.log(`Gas used (transfer): ${transferTx.result.gasUsed}`);
@@ -439,6 +442,8 @@ describe('AENSWrapping', () => {
         await expectNameOwnerContract(aensNames, otherAccount.address);
         ownerDryRunTx = await contract.owner(1);
         assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
+        resolveNftIdAndOwnerTxDryRun = await contract.resolve_nft_id_and_owner(aensNames[0]);
+        assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
     });
   });
