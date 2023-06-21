@@ -411,6 +411,35 @@ describe('AENSWrapping', () => {
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
+
+      it('transfer (NFT)', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+  
+        const otherAccount = utils.getDefaultAccounts()[1];
+
+        // check owner before transfer
+        await expectNameOwnerContract(aensNames, aeSdk.selectedAddress);
+        let ownerDryRunTx = await contract.owner(1);
+        assert.equal(ownerDryRunTx.decodedResult, aeSdk.selectedAddress);
+
+        // transfer NFT to other account
+        const transferTx = await contract.transfer(otherAccount.address, 1);
+        console.log(`Gas used (transfer): ${transferTx.result.gasUsed}`);
+
+        // check Transfer event
+        assert.equal(transferTx.decodedEvents[0].name, 'Transfer');
+        assert.equal(transferTx.decodedEvents[0].args[0], aeSdk.selectedAddress);
+        assert.equal(transferTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(transferTx.decodedEvents[0].args[2], 1);
+
+        // check after transfer
+        await expectNameOwnerContract(aensNames, otherAccount.address);
+        ownerDryRunTx = await contract.owner(1);
+        assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
+      });
     });
   });
 });
