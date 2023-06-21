@@ -54,6 +54,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | NameUnwrap(int, address, string, address)
         // nft_id, caller, new_ttl
         | NameExtend(int, address, int)
+        // nft_id_old, nft_id_new, name
+        | NameTransfer(int, int, string)
 
     stateful entrypoint init() =
         { owner = Contract.creator,
@@ -297,8 +299,23 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
     stateful entrypoint transfer_single(nft_id_old: int, nft_id_new: int, name: string) =
-        // TODO
-        ()
+        require_authorized(nft_id_old)
+        require(Map.lookup(nft_id_new, state.token_to_owners) != None, "RECIPIENT_TOKEN_NOT_EXISTS")
+        require_not_expired(nft_id_old)
+        let new_expiration_height = require_not_expired(nft_id_new)
+        // update state of old nft
+        let Some(MetadataMap(metadata_map_old_nft)) = Map.lookup(nft_id_old, state.metadata)
+        put(state{ metadata[nft_id_old] @nft_metadata = MetadataMap(Map.delete(name, metadata_map_old_nft)) })
+        // update state of new nft
+        let Some(MetadataMap(metadata_map_new_nft)) = Map.lookup(nft_id_new, state.metadata)
+        let updated_map_new_nft = metadata_map_new_nft{[name] @ n = ""}
+        put(state{ metadata[nft_id_new] @nft_metadata = MetadataMap(updated_map_new_nft) })
+        // update the ttl of the transfered name and keep in sync with expiration height of new nft
+        update_name_ttl(name, FixedTTL(new_expiration_height))
+        // update map for name resolving
+        let Some(owner_new_nft) = owner(nft_id_new)
+        put(state{ names_to_token_and_owner[name] @token_owner = (nft_id_new, owner_new_nft) })
+        Chain.event(NameTransfer(nft_id_old, nft_id_new, name))
 
     /// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
