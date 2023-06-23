@@ -353,6 +353,10 @@ describe('AENSWrapping', () => {
         const expirationHeightNftTwo = (await contract.get_expiration_by_nft_id(2)).decodedResult;
         assert.notEqual(expirationHeightNftTwo, expirationHeightNftOne);
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftOne });
+        let nftDataOne = (await contract.get_nft_data(1)).decodedResult
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, names: aensNames, expiration_height: expirationHeightNftOne});
+        let nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
+        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, names: [], expiration_height: expirationHeightNftTwo});
   
         // transfer multiple names to another NFT
         const transferMultipleTx = await contract.transfer_multiple(1, 2, aensNames);
@@ -371,6 +375,10 @@ describe('AENSWrapping', () => {
         await expectNameOwnerContract(aensNames, otherAccount.address);
         await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNames));
         await expectNameNftId(aensNames, 2);
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, names: [], expiration_height: expirationHeightNftOne});
+        nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
+        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, names: aensNames, expiration_height: expirationHeightNftTwo});
   
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });

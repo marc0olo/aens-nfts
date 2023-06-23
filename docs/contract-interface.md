@@ -58,6 +58,12 @@ contract interface IAENSWrapping : IAEX141 =
         // nft_id_old, nft_id_new, name
         | NameTransfer(int, int, string)
 
+    record nft_data =
+        { id: int
+        , owner: address
+        , names: list(string)
+        , expiration_height: int }
+
     record config = 
         { reward: int
         , reward_block_window: int
@@ -79,6 +85,11 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param name the name to lookup
     /// @return nft_id and owner
     entrypoint resolve_nft_id_and_owner : (string) => option(int * address)
+
+    /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
+    /// @param nft_id the NFT id
+    /// @return nft_data
+    entrypoint get_nft_data : (string) => option(nft_data)
 
     /// @notice returns the expiration height of names that are wrapped into the provided nft id
     /// @param nft_id the NFT id

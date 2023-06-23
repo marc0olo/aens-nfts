@@ -17,6 +17,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , base_url: option(string)
         , metadata_type : metadata_type }
 
+    record nft_data =
+        { id: int
+        , owner: address
+        , names: list(string)
+        , expiration_height: int }
+
     record config = 
         { reward: int
         , reward_block_window: int
@@ -195,6 +201,18 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
                 let Some(owner) = Map.lookup(nft_id, state.token_to_owner)
                 Some((nft_id, owner))
             None => None
+
+    /// @notice returns nft data (id, owner and the list of names wrapped into the nft and the expiration_height)
+    /// @param nft_id the NFT id
+    /// @return nft_data
+    entrypoint get_nft_data(nft_id: int) : option(nft_data) =
+        switch(owner(nft_id))
+            None => None
+            Some(owner) =>
+                let Some(MetadataMap(nft_metadata_map)) = Map.lookup(nft_id, state.metadata)
+                let names = List.map(Pair.fst, Map.to_list(nft_metadata_map))
+                let Some(FixedTTL(expiration_height)) = Map.lookup(nft_id, state.token_to_name_expiration)
+                Some({ id = nft_id, owner = owner, names = names, expiration_height = expiration_height })
 
     /// @notice returns the expiration height of names that are wrapped into the provided nft id
     /// @param nft_id the NFT id
