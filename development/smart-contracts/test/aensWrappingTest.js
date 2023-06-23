@@ -147,9 +147,9 @@ describe('AENSWrapping', () => {
   
         for(let i=0; i<aensNames.length; i++) {
           assert.equal(wrapAndMintTx.decodedEvents[i].name, 'NameWrap');
-          assert.equal(wrapAndMintTx.decodedEvents[i].args[0], 1);
-          assert.equal(wrapAndMintTx.decodedEvents[i].args[1], aeSdk.selectedAddress);
-          assert.equal(wrapAndMintTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
+          assert.equal(wrapAndMintTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
+          assert.equal(wrapAndMintTx.decodedEvents[i].args[1], 1);
+          assert.equal(wrapAndMintTx.decodedEvents[i].args[2], aeSdk.selectedAddress);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[3], expectedTtl);
         }
   
@@ -312,9 +312,9 @@ describe('AENSWrapping', () => {
 
         // check NameTransfer event
         assert.equal(transferSingleTx.decodedEvents[0].name, 'NameTransfer');
-        assert.equal(transferSingleTx.decodedEvents[0].args[0], 1);
-        assert.equal(transferSingleTx.decodedEvents[0].args[1], 2);
-        assert.equal(transferSingleTx.decodedEvents[0].args[2], aensNames[0]);
+        assert.equal(transferSingleTx.decodedEvents[0].args[0], aensNames[0]);
+        assert.equal(transferSingleTx.decodedEvents[0].args[1], 1);
+        assert.equal(transferSingleTx.decodedEvents[0].args[2], 2);
   
         // check after transfer
         await expectNameOwnerContract(aensNames.slice(1), aeSdk.selectedAddress);
@@ -365,9 +365,9 @@ describe('AENSWrapping', () => {
         // check NameTransfer event
         for(let i=0; i<aensNames.length; i++) {
           assert.equal(transferMultipleTx.decodedEvents[i].name, 'NameTransfer');
-          assert.equal(transferMultipleTx.decodedEvents[i].args[0], 1);
-          assert.equal(transferMultipleTx.decodedEvents[i].args[1], 2);
-          assert.equal(transferMultipleTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[1], 1);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[2], 2);
         }
   
         // check after transfer
@@ -405,9 +405,9 @@ describe('AENSWrapping', () => {
         // check NameTransfer event
         for(let i=0; i<aensNames.length; i++) {
           assert.equal(transferAllTx.decodedEvents[i].name, 'NameTransfer');
-          assert.equal(transferAllTx.decodedEvents[i].args[0], 1);
-          assert.equal(transferAllTx.decodedEvents[i].args[1], 2);
-          assert.equal(transferAllTx.decodedEvents[i].args[2], aensNames[aensNames.length-(i+1)]);
+          assert.equal(transferAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
+          assert.equal(transferAllTx.decodedEvents[i].args[1], 1);
+          assert.equal(transferAllTx.decodedEvents[i].args[2], 2);
         }
 
         // check after transfer
@@ -452,6 +452,39 @@ describe('AENSWrapping', () => {
         assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
         resolveNftIdAndOwnerTxDryRun = await contract.resolve_nft_id_and_owner(aensNames[0]);
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
+      });
+
+      it('extend_all', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // move 10 blocks into the future
+        await utils.awaitKeyBlocks(aeSdk, 10);
+
+        // get height before extending
+        const heightBeforeExtending = await aeSdk.getHeight();
+        // extend names with other account, without distributing any reward
+        const otherAccount = utils.getDefaultAccounts()[1];
+        const extendAllTx = await contract.extend_all(1, { onAccount: otherAccount });
+        console.log(`Gas used (extend_all with ${aensNames.length} names): ${extendAllTx.result.gasUsed}`);
+
+        const expectedNewExpirationHeight = heightBeforeExtending + 180_000;
+
+        // check NameExtend event
+        for(let i=0; i<aensNames.length; i++) {
+          assert.equal(extendAllTx.decodedEvents[i].name, 'NameExtend');
+          assert.equal(extendAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
+          assert.equal(extendAllTx.decodedEvents[i].args[1], 1);
+          assert.equal(extendAllTx.decodedEvents[i].args[2], expectedNewExpirationHeight);
+          assert.equal(extendAllTx.decodedEvents[i].args[3], otherAccount.address);
+        }
+
+        // check correct expiration height after extending
+        const newExpirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        assert.equal(newExpirationHeight, expectedNewExpirationHeight);
+        await expectNameAttributesProtocol(aensNames, { ttl: expectedNewExpirationHeight });
       });
     });
   });

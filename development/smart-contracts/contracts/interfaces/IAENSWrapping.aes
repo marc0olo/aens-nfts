@@ -3,14 +3,14 @@ include "Set.aes"
 contract interface IAENSWrapping =
 
     datatype event
-        // nft_id, owner, name, new_ttl
-        = NameWrap(int, address, string, int)
-        // nft_id, current_owner, name, recipient
-        | NameUnwrap(int, address, string, address)
-        // nft_id, caller, new_ttl
-        | NameExtend(int, address, int)
-        // nft_id_old, nft_id_new, name
-        | NameTransfer(int, int, string)
+        // name, nft_id, owner, new_ttl
+        = NameWrap(string, int, address, int)
+        // name, nft_id, current_owner, recipient
+        | NameUnwrap(string, int, address, address)
+        // name, nft_id, new_ttl, caller
+        | NameExtend(string, int, int, address)
+        // name, nft_id_old, nft_id_new
+        | NameTransfer(string, int, int)
 
     record nft_data =
         { id: int
