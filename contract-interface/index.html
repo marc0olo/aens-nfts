@@ -633,15 +633,17 @@
 <span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">nft_data</span><span class="w"> </span><span class="ow">=</span>
 <span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">owner</span><span class="ow">:</span><span class="w"> </span><span class="kt">address</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">owner_config</span><span class="ow">:</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">names</span><span class="ow">:</span><span class="w"> </span><span class="kt">list</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">expiration_height</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">}</span>
 
-<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span>
+<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="ow">=</span>
 <span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">reward</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">reward_block_window</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward_block_window</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">can_receive_from_others</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward_block_window</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">can_receive_from_others</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">burnable_if_empty</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">}</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the account address of the real owner</span>
 <span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
