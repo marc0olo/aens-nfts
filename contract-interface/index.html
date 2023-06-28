@@ -670,6 +670,16 @@
 <span class="w">    </span><span class="c1">/// @return the (fixed) height where all names wrapped into the nft will expire</span>
 <span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_expiration_by_nft_id</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span>
 
+<span class="w">    </span><span class="c1">/// @notice returns the global config for an account</span>
+<span class="w">    </span><span class="c1">/// @param account the account address to lookup the config for</span>
+<span class="w">    </span><span class="c1">/// @return the global config for an account OR None if not set</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the balance included in the reward pool</span>
+<span class="w">    </span><span class="c1">/// @param account the account where the reward pool balance should be looked up for</span>
+<span class="w">    </span><span class="c1">/// @return the reward pool balance</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
 <span class="w">    </span><span class="c1">/// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names</span>
 <span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
 <span class="w">    </span><span class="c1">/// @return the NFT id</span>
@@ -795,7 +805,7 @@
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_nft_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
 <span class="w">    </span><span class="c1">/// @notice caller deposits AE to his reward pool</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">deposit_to_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">payable</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">deposit_to_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
 <span class="w">    </span><span class="c1">/// @notice caller withdraws all AE or a specific amount from his reward pool</span>
 <span class="w">    </span><span class="c1">/// @param amount the optional amount of AE to withdraw</span>
