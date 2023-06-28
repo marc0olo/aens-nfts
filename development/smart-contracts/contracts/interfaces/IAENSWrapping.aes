@@ -52,6 +52,16 @@ contract interface IAENSWrapping =
     /// @return the (fixed) height where all names wrapped into the nft will expire
     entrypoint get_expiration_by_nft_id : (int) => option(int)
 
+    /// @notice returns the global config for an account
+    /// @param account the account address to lookup the config for
+    /// @return the global config for an account OR None if not set
+    entrypoint get_global_config : (address) => option(config)
+
+    /// @notice returns the balance included in the reward pool
+    /// @param account the account where the reward pool balance should be looked up for
+    /// @return the reward pool balance
+    entrypoint get_reward_pool : (address) => int
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id
@@ -177,7 +187,7 @@ contract interface IAENSWrapping =
     stateful entrypoint remove_nft_config : (int) => unit
 
     /// @notice caller deposits AE to his reward pool
-    stateful entrypoint deposit_to_reward_pool : () => unit
+    stateful payable entrypoint deposit_to_reward_pool : () => unit
 
     /// @notice caller withdraws all AE or a specific amount from his reward pool
     /// @param amount the optional amount of AE to withdraw

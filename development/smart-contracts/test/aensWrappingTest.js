@@ -486,6 +486,99 @@ describe('AENSWrapping', () => {
         assert.equal(newExpirationHeight, expectedNewExpirationHeight);
         await expectNameAttributesProtocol(aensNames, { ttl: expectedNewExpirationHeight });
       });
+
+      it('set_global_config, set_nft_config, remove_nft_config & remove_global_config', async () => {
+        await contract.mint(aeSdk.selectedAddress);
+
+        // pre config checks
+        const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [], expiration_height: expirationHeight});
+        let config = (await contract.get_global_config(aeSdk.selectedAddress)).decodedResult;
+        assert.deepEqual(config, undefined);
+      
+        // set global config
+        const globalConfig = {
+          reward: 1_337n,
+          reward_block_window: 480n,
+          emergency_reward: 1_000_000n,
+          emergency_reward_block_window: 20n,
+          can_receive_from_others: false,
+          burnable_if_empty: false
+        }
+        await contract.set_global_config(globalConfig);
+
+        // check global config
+        config = (await contract.get_global_config(aeSdk.selectedAddress)).decodedResult;
+        assert.deepEqual(config, globalConfig);
+        // check nft data
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: globalConfig, names: [], expiration_height: expirationHeight});
+
+        // set nft config
+        const nftConfig = {
+          reward: 1n,
+          reward_block_window: 10n,
+          emergency_reward: 1_000n,
+          emergency_reward_block_window: 1n,
+          can_receive_from_others: true,
+          burnable_if_empty: true
+        }
+        await contract.set_nft_config(1, nftConfig);
+
+        // check global config
+        config = (await contract.get_global_config(aeSdk.selectedAddress)).decodedResult;
+        assert.deepEqual(config, globalConfig);
+        // check nft data
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: nftConfig, names: [], expiration_height: expirationHeight});
+
+        // remove nft config
+        await contract.remove_nft_config(1);
+
+        // check nft data
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: globalConfig, names: [], expiration_height: expirationHeight});
+
+        // remove global config
+        await contract.remove_global_config();
+
+        // after removal checks
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [], expiration_height: expirationHeight});
+        config = (await contract.get_global_config(aeSdk.selectedAddress)).decodedResult;
+        assert.deepEqual(config, undefined);
+      });
+
+      it('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
+        const oneAe = 1_000_000_000_000_000_000n;
+
+        // check before deposit
+        let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, 0n);
+
+        // deposit
+        await contract.deposit_to_reward_pool({ amount: oneAe });
+
+        // check after deposit
+        rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, oneAe);
+
+        // withdraw tenth
+        const toWithdraw = oneAe / 10n;
+        await contract.withdraw_from_reward_pool(toWithdraw);
+
+        // check after withdraw
+        rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, oneAe - toWithdraw);
+
+        // withdraw remaining balance
+        await contract.withdraw_from_reward_pool();
+        
+        // check before deposit
+        rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, 0n);
+      });
     });
   });
 });

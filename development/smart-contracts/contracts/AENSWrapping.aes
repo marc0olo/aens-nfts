@@ -37,11 +37,11 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , meta_info: meta_info
         , token_to_owner: map(int, address)
         , owner_to_tokens: map(address, Set.set(int))
-        , owner_to_config: map(address, config)
-        , owner_to_reward_pool: map(address, int)
         , name_to_token: map(string, int)
         , token_to_name_expiration: map(int, Chain.ttl)
         , token_to_config: map(int, config)
+        , account_to_config: map(address, config)
+        , account_to_reward_pool: map(address, int)
         , max_name_ttl: Chain.ttl
         , balances: map(address, int)
         , approvals: map(int, address)
@@ -73,11 +73,11 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           meta_info = { name = "Wrapped AENS", symbol = "WAENS", base_url = None, metadata_type = MAP },
           token_to_owner = {},
           owner_to_tokens = {},
-          owner_to_config = {},
-          owner_to_reward_pool = {},
           name_to_token = {},
           token_to_name_expiration = {},
           token_to_config = {},
+          account_to_config = {},
+          account_to_reward_pool = {},
           max_name_ttl = RelativeTTL(180_000),
           balances = {},
           approvals = {},
@@ -220,8 +220,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
                 let Some(MetadataMap(nft_metadata_map)) = Map.lookup(nft_id, state.metadata)
                 let names = List.map(Pair.fst, Map.to_list(nft_metadata_map))
                 let Some(FixedTTL(expiration_height)) = Map.lookup(nft_id, state.token_to_name_expiration)
-                // TODO get owner config (global vs. nft specific)
-                Some({ id = nft_id, owner = owner, owner_config = None, names = names, expiration_height = expiration_height })
+                let config = get_nft_config(nft_id, owner)
+                Some({ id = nft_id, owner = owner, owner_config = config, names = names, expiration_height = expiration_height })
 
     /// @notice returns the expiration height of names that are wrapped into the provided nft id
     /// @param nft_id the NFT id
@@ -232,6 +232,18 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             Some(v) =>
                 let FixedTTL(height) = v
                 Some(height)
+
+    /// @notice returns the global config for an account
+    /// @param account the account address to lookup the config for
+    /// @return the global config for an account OR None if not set
+    entrypoint get_global_config(account: address) : option(config) =
+        Map.lookup(account, state.account_to_config)
+
+    /// @notice returns the balance included in the reward pool
+    /// @param account the account where the reward pool balance should be looked up for
+    /// @return the reward pool balance
+    entrypoint get_reward_pool(account: address) : int =
+        state.account_to_reward_pool[account = 0]
 
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
@@ -406,11 +418,11 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @notice caller sets global config for NFTs owned by the caller
     /// @param config the global config
     stateful entrypoint set_global_config(config: config) =
-        put(state{ owner_to_config[Call.caller] @cfg = config })
+        put(state{ account_to_config[Call.caller] @cfg = config })
 
     /// @notice caller removes global config for NFTs owned by the caller
     stateful entrypoint remove_global_config() =
-        put(state{ owner_to_config @ val = Map.delete(Call.caller, val) })
+        put(state{ account_to_config @ val = Map.delete(Call.caller, val) })
 
     /// @notice caller sets NFT specific config
     /// @param nft_id the id of the NFT to set the config
@@ -426,9 +438,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         put(state{ token_to_config @val = Map.delete(nft_id, val) })
 
     /// @notice caller deposits AE to his reward pool
-    stateful entrypoint deposit_to_reward_pool() =
+    stateful payable entrypoint deposit_to_reward_pool() =
         require(Call.value > 0, "DEPOSIT_VALUE_MISSING")
-        put(state{ owner_to_reward_pool[Call.caller = 0] @reward_pool = reward_pool + Call.value })
+        put(state{ account_to_reward_pool[Call.caller = 0] @reward_pool = reward_pool + Call.value })
 
     /// @notice caller withdraws all AE or a specific amount from his reward pool
     /// @param amount the optional amount of AE to withdraw
@@ -436,18 +448,22 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         let reward_pool = require_ae_in_reward_pool()
         switch(amount)
             None =>
-                put(state{ owner_to_reward_pool @val = Map.delete(Call.caller, val) })
+                put(state{ account_to_reward_pool @val = Map.delete(Call.caller, val) })
                 Chain.spend(Call.caller, reward_pool)
             Some(value) =>
-                require(reward_pool >= value, "REWARD_POOL_TOO_LOW")
-                put(state{ owner_to_reward_pool[Call.caller] @reward_pool = reward_pool - value })
+                require(reward_pool >= value, "INSUFFICIENT_BALANCE_IN_POOL")
+                put(state{ account_to_reward_pool[Call.caller] @reward_pool = reward_pool - value })
                 Chain.spend(Call.caller, value)
 
     /// @notice calculates the reward based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner
     /// @param nft_id the id of the NFT to extend
     /// @return the estimated reward
     entrypoint estimate_reward(nft_id: int) =
-        0
+        let owner = require_exists(nft_id)
+        let expiration_height = require_not_expired(nft_id)
+        switch(get_nft_config(nft_id, owner))
+            None => 0
+            Some(config) => get_possible_reward(owner, config, expiration_height)
 
     /// @notice extends all AENS names wrapped in the NFT without getting a reward
     /// @param nft_id the id of the NFT that wraps the AENS names to extend
@@ -486,7 +502,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     // internal helper functions
 
     function require_ae_in_reward_pool() : int =
-        let reward_pool = Map.lookup_default(Call.caller, state.owner_to_reward_pool, 0)
+        let reward_pool = Map.lookup_default(Call.caller, state.account_to_reward_pool, 0)
         require(reward_pool > 0, "NO_AE_IN_REWARD_POOL")
         reward_pool
 
@@ -593,6 +609,26 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             , token_to_owner = Map.delete(token_id, state.token_to_owner)
             , owner_to_tokens[owner] @owners_tokens = Set.delete(token_id, owners_tokens) })
 
+    function get_possible_reward(owner: address, owner_cfg : config, expiration_height: int) : int =
+        let delta = expiration_height - Chain.block_height
+        if(delta > owner_cfg.reward_block_window)
+            0
+        else
+            let expected_reward =
+                switch(delta =< owner_cfg.emergency_reward_block_window)
+                    true => owner_cfg.emergency_reward
+                    false => owner_cfg.reward
+            let reward_pool = state.account_to_reward_pool[owner = 0]
+            if(reward_pool >= expected_reward)
+                expected_reward
+            else
+                reward_pool
+
+    function get_nft_config(nft_id: int, owner: address) : option(config) =
+        switch(Map.lookup(nft_id, state.token_to_config))
+            None => get_global_config(owner)
+            Some(cfg) => Some(cfg)
+
     function to_fixed_ttl(relative_ttl: Chain.ttl) : int =
         let RelativeTTL(ttl) = relative_ttl
         Chain.block_height + ttl
@@ -607,6 +643,6 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             (false, false)
 
     function bool_to_string(v: bool): string =
-        switch (v)
+        switch(v)
             true => "true"
             false => "false"
