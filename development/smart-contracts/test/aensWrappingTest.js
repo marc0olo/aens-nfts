@@ -38,6 +38,8 @@ describe('AENSWrapping', () => {
     // "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
   ];
 
+  const oneAe = 1_000_000_000_000_000_000n;
+
   before(async () => {
     aeSdk = await utils.getSdk();
 
@@ -117,6 +119,12 @@ describe('AENSWrapping', () => {
         names.map(async (name) => [name, await aeSdk.createDelegationSignature(contractId, [name])])
       )
     );
+  }
+
+  function getTotalTxCosts(txResult) {
+    const txFee = txResult.txData.tx.fee;
+    const gasCosts = BigInt(txResult.result.gasUsed) * txResult.result.gasPrice;
+    return txFee + gasCosts;
   }
 
   describe('AENS Wrapping', () => {
@@ -551,8 +559,6 @@ describe('AENSWrapping', () => {
       });
 
       it('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
-        const oneAe = 1_000_000_000_000_000_000n;
-
         // check before deposit
         let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
         assert.equal(rewardPool, 0n);
@@ -578,6 +584,129 @@ describe('AENSWrapping', () => {
         // check before deposit
         rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
         assert.equal(rewardPool, 0n);
+      });
+
+      it('extend_all_for_reward (regular reward)', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // set global config
+        const globalConfig = {
+          reward: 1_337n,
+          reward_block_window: 179_950n,
+          emergency_reward: 1_000_000n,
+          emergency_reward_block_window: 179_900n,
+          can_receive_from_others: false,
+          burnable_if_empty: false
+        }
+        await contract.set_global_config(globalConfig);
+
+        // deposit
+        await contract.deposit_to_reward_pool({ amount: oneAe });
+
+        // check before extending for reward
+        let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, oneAe);
+
+        // extend for 0 reward
+        const otherAccount = utils.getDefaultAccounts()[1];
+        let extendAllForRewardTx = await contract.extend_all_for_reward(1, { onAccount: otherAccount });
+
+        // check Reward event
+        assert.equal(extendAllForRewardTx.decodedEvents[0].name, 'Reward');
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[0], 1);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], 0);
+
+        // get block height, expiration height and jump into the future
+        let blockHeight = await aeSdk.getHeight();
+        let expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let targetDelta = Number(expirationHeight) - Number(globalConfig.reward_block_window) - blockHeight + 1;
+        await utils.awaitKeyBlocks(aeSdk, targetDelta);
+
+        // get balance
+        let oldBalance = BigInt(await aeSdk.getBalance(otherAccount.address));
+
+        // extend for regular reward
+        extendAllForRewardTx = await contract.extend_all_for_reward(1, { onAccount: otherAccount });
+        console.log(`Gas used (extend_all_for_reward with ${aensNames.length} names and regular reward): ${extendAllForRewardTx.result.gasUsed}`);
+
+        // get total tx costs
+        let totalCosts = getTotalTxCosts(extendAllForRewardTx);
+
+        // get balance after claiming reward
+        let newBalance = BigInt(await aeSdk.getBalance(otherAccount.address));
+
+        assert.equal(newBalance, oldBalance + globalConfig.reward - totalCosts);
+
+        // check Reward event
+        assert.equal(extendAllForRewardTx.decodedEvents[0].name, 'Reward');
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[0], 1);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.reward);
+      });
+      it('extend_all_for_reward (emergency reward)', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // set global config
+        const globalConfig = {
+          reward: 1_337n,
+          reward_block_window: 179_950n,
+          emergency_reward: 1_000_000n,
+          emergency_reward_block_window: 179_900n,
+          can_receive_from_others: false,
+          burnable_if_empty: false
+        }
+        await contract.set_global_config(globalConfig);
+
+        // deposit
+        await contract.deposit_to_reward_pool({ amount: oneAe });
+
+        // check before extending for reward
+        let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(rewardPool, oneAe);
+
+        // extend for 0 reward
+        const otherAccount = utils.getDefaultAccounts()[1];
+        let extendAllForRewardTx = await contract.extend_all_for_reward(1, { onAccount: otherAccount });
+
+        // check Reward event
+        assert.equal(extendAllForRewardTx.decodedEvents[0].name, 'Reward');
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[0], 1);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], 0);
+
+        // get block height, expiration height and jump into the future
+        let blockHeight = await aeSdk.getHeight();
+        let expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let targetDelta = Number(expirationHeight) - Number(globalConfig.emergency_reward_block_window) - blockHeight + 1;
+        await utils.awaitKeyBlocks(aeSdk, targetDelta);
+
+        // get balance
+        let oldBalance = BigInt(await aeSdk.getBalance(otherAccount.address));
+
+        // extend for emergency reward
+        extendAllForRewardTx = await contract.extend_all_for_reward(1, { onAccount: otherAccount });
+        console.log(`Gas used (extend_all_for_reward with ${aensNames.length} names and emergency reward): ${extendAllForRewardTx.result.gasUsed}`);
+
+        // get total tx costs
+        let totalCosts = getTotalTxCosts(extendAllForRewardTx);
+
+        // get balance after claiming reward
+        let newBalance = BigInt(await aeSdk.getBalance(otherAccount.address));
+
+        assert.equal(newBalance, oldBalance + globalConfig.emergency_reward - totalCosts);
+
+        // check Reward event
+        assert.equal(extendAllForRewardTx.decodedEvents[0].name, 'Reward');
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[0], 1);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.emergency_reward);
       });
     });
   });

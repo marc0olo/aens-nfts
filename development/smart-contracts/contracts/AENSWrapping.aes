@@ -67,6 +67,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | NameExtend(string, int, int, address)
         // name, nft_id_old, nft_id_new
         | NameTransfer(string, int, int)
+        // nft_id, caller, reward
+        | Reward(int, address, int)
 
     stateful entrypoint init() =
         { owner = Contract.creator,
@@ -478,8 +480,20 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @notice extends all AENS names wrapped in the NFT and distributes a reward to the caller
     /// @param nft_id the id of the NFT that wraps the AENS names to extend
     stateful entrypoint extend_all_for_reward(nft_id: int) =
-        // TODO
-        ()
+        let owner = require_exists(nft_id)
+        let expiration_height = require_not_expired(nft_id)
+        let nft_metadata_map = require_names_wrapped(nft_id)
+        let reward =
+            switch(get_nft_config(nft_id, owner))
+                None => 0
+                Some(config) => get_possible_reward(owner, config, expiration_height)
+        // TODO => shall we allow 0 reward?!
+        let new_expiration_height = to_fixed_ttl(state.max_name_ttl)
+        List.foreach(Map.to_list(nft_metadata_map), (val) => __extend(nft_id, Pair.fst(val), new_expiration_height))
+        put(state{ token_to_name_expiration[nft_id] @name_expiration = FixedTTL(new_expiration_height) })
+        put(state{ account_to_reward_pool[owner = 0] @reward_pool = reward_pool - reward })
+        Chain.spend(Call.caller, reward)
+        Chain.event(Reward(nft_id, Call.caller, reward))
 
     /// @notice transfers a set of NFTs to the desired recipient
     /// @param recipient the address to become new owner of the NFTs
@@ -533,11 +547,6 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         let owner = require_exists(token_id)
         require(Call.caller == owner || is_approved(token_id, Call.caller) || is_approved_for_all(owner, Call.caller), "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED")
         owner
-
-    // function is_token_owner(token_id: int, a: address) : bool =
-    //     switch(Map.lookup(token_id, state.token_to_owner))
-    //         None => false
-    //         Some(o) => o == a
 
     stateful function __extend(nft_id: int, name: string, new_expiration_height: int) =
         AENS.update(Contract.address, name, Some(FixedTTL(new_expiration_height)), None, None)
@@ -615,9 +624,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             0
         else
             let expected_reward =
-                switch(delta =< owner_cfg.emergency_reward_block_window)
-                    true => owner_cfg.emergency_reward
-                    false => owner_cfg.reward
+                switch(delta > owner_cfg.emergency_reward_block_window)
+                    true => owner_cfg.reward
+                    false => owner_cfg.emergency_reward
             let reward_pool = state.account_to_reward_pool[owner = 0]
             if(reward_pool >= expected_reward)
                 expected_reward
