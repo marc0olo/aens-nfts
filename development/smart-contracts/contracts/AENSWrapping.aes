@@ -377,20 +377,20 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         let Some(owner_target_nft) = owner(nft_id_new)
         List.foreach(Map.to_list(nft_metadata_map), (val) => __transfer_single(nft_id_old, nft_id_new, Pair.fst(val), new_expiration_height, owner_target_nft))
 
-    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signature off-chain to the owner of the target NFT, updates expiry of name to match expiry of already wrapped names
+    /// @notice transfers a single AENS name to another NFT by requiring explicit authorization of the recipient via delegation signature. can be used if can_receive_from_others is false
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
-    /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_old
-    stateful entrypoint claim_single_transfer(nft_id_old: int, nft_id_new: int, name: string, delegation_sig: signature) =
+    /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_new
+    stateful entrypoint transfer_single_authorized(nft_id_old: int, nft_id_new: int, name: string, delegation_sig: signature) =
         // TODO
         ()
 
-    /// @notice claims the transfer of a single AENS name to another NFT, requires the current owner to provide the delegation signatures off-chain to the owner of the target NFT, updates expiry of names to match expiry of already wrapped names
+    /// @notice transfers multiple AENS names to another NFT by requiring explicit authorization of the recipient via delegation signatures. can be used if can_receive_from_others is false
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint claim_multiple_transfer(nft_id_old: int, nft_id_new: int, names_delegation_sigs: map(string, signature)) =
+    stateful entrypoint transfer_multiple_authorized(nft_id_old: int, nft_id_new: int, names_delegation_sigs: map(string, signature)) =
         // TODO
         ()
 
