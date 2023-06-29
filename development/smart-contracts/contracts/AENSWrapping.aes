@@ -342,10 +342,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param name the AENS name to transfer
     stateful entrypoint transfer_single(nft_id_old: int, nft_id_new: int, name: string) =
-        require_authorized(nft_id_old)
+        let current_owner = require_authorized(nft_id_old)
+        let target_owner = require_exists(nft_id_new)
         require_not_expired(nft_id_old)
-        require(Map.lookup(nft_id_new, state.token_to_owner) != None, "RECIPIENT_TOKEN_NOT_EXISTS")
         let new_expiration_height = require_not_expired(nft_id_new)
+        if(current_owner != target_owner)
+            require_can_receive_name(nft_id_new, target_owner)
         let Some(owner_target_nft) = owner(nft_id_new)
         __transfer_single(nft_id_old, nft_id_new, name, new_expiration_height, owner_target_nft)
 
@@ -354,10 +356,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     /// @param names the AENS names to transfer
     stateful entrypoint transfer_multiple(nft_id_old: int, nft_id_new: int, names: Set.set(string)) =
-        require_authorized(nft_id_old)
+        let current_owner = require_authorized(nft_id_old)
+        let target_owner = require_exists(nft_id_new)
         require_not_expired(nft_id_old)
-        require(Map.lookup(nft_id_new, state.token_to_owner) != None, "RECIPIENT_TOKEN_NOT_EXISTS")
         let new_expiration_height = require_not_expired(nft_id_new)
+        if(current_owner != target_owner)
+            require_can_receive_name(nft_id_new, target_owner)
         let Some(owner_target_nft) = owner(nft_id_new)
         List.foreach(Set.to_list(names), (n) => __transfer_single(nft_id_old, nft_id_new, n, new_expiration_height, owner_target_nft))
 
@@ -514,6 +518,11 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         Set.to_list(Map.lookup_default(owner, state.owner_to_tokens, Set.new()))
 
     // internal helper functions
+
+    function require_can_receive_name(target_nft_id: int, target_owner: address) =
+        switch(get_nft_config(target_nft_id, target_owner))
+            None => abort("RECEIVING_NAME_NOT_ALLOWED")
+            Some(cfg) => require(cfg.can_receive_from_others, "RECEIVING_NAME_NOT_ALLOWED")
 
     function require_ae_in_reward_pool() : int =
         let reward_pool = Map.lookup_default(Call.caller, state.account_to_reward_pool, 0)

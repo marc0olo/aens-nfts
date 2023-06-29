@@ -40,6 +40,15 @@ describe('AENSWrapping', () => {
 
   const oneAe = 1_000_000_000_000_000_000n;
 
+  const globalConfig = {
+    reward: 1_337n,
+    reward_block_window: 179_950n,
+    emergency_reward: 1_000_000n,
+    emergency_reward_block_window: 179_900n,
+    can_receive_from_others: true,
+    burnable_if_empty: false
+  }
+
   before(async () => {
     aeSdk = await utils.getSdk();
 
@@ -314,6 +323,9 @@ describe('AENSWrapping', () => {
         assert.notEqual(expirationHeightNftTwo, expirationHeightNftOne);
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftOne });
   
+        // set global config to allow receiving names
+        await contract.set_global_config(globalConfig, { onAccount: otherAccount });
+
         // transfer a single name to another NFT
         const transferSingleTx = await contract.transfer_single(1, 2, aensNames[0]);
         console.log(`Gas used (transfer_single): ${transferSingleTx.result.gasUsed}`);
@@ -366,6 +378,9 @@ describe('AENSWrapping', () => {
         let nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
         assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: undefined, names: [], expiration_height: expirationHeightNftTwo});
   
+        // set global config to allow receiving names
+        await contract.set_global_config(globalConfig, { onAccount: otherAccount });
+
         // transfer multiple names to another NFT
         const transferMultipleTx = await contract.transfer_multiple(1, 2, aensNames);
         console.log(`Gas used (transfer_multiple with ${aensNames.length} names): ${transferMultipleTx.result.gasUsed}`);
@@ -386,7 +401,7 @@ describe('AENSWrapping', () => {
         nftDataOne = (await contract.get_nft_data(1)).decodedResult
         assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [], expiration_height: expirationHeightNftOne});
         nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
-        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: undefined, names: aensNames, expiration_height: expirationHeightNftTwo});
+        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: globalConfig, names: aensNames, expiration_height: expirationHeightNftTwo});
   
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
@@ -506,14 +521,6 @@ describe('AENSWrapping', () => {
         assert.deepEqual(config, undefined);
       
         // set global config
-        const globalConfig = {
-          reward: 1_337n,
-          reward_block_window: 480n,
-          emergency_reward: 1_000_000n,
-          emergency_reward_block_window: 20n,
-          can_receive_from_others: false,
-          burnable_if_empty: false
-        }
         await contract.set_global_config(globalConfig);
 
         // check global config
@@ -593,14 +600,6 @@ describe('AENSWrapping', () => {
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // set global config
-        const globalConfig = {
-          reward: 1_337n,
-          reward_block_window: 179_950n,
-          emergency_reward: 1_000_000n,
-          emergency_reward_block_window: 179_900n,
-          can_receive_from_others: false,
-          burnable_if_empty: false
-        }
         await contract.set_global_config(globalConfig);
 
         // deposit
@@ -654,14 +653,6 @@ describe('AENSWrapping', () => {
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // set global config
-        const globalConfig = {
-          reward: 1_337n,
-          reward_block_window: 179_950n,
-          emergency_reward: 1_000_000n,
-          emergency_reward_block_window: 179_900n,
-          can_receive_from_others: false,
-          burnable_if_empty: false
-        }
         await contract.set_global_config(globalConfig);
 
         // deposit
