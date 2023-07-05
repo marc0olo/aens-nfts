@@ -67,6 +67,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | NameExtend(string, int, int, address)
         // name, nft_id_old, nft_id_new
         | NameTransfer(string, int, int)
+        // name, nft_id
+        | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
 
@@ -304,21 +306,25 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name to revoke
     stateful entrypoint revoke_single(nft_id: int, name: string) =
-        // TODO
-        ()
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        __revoke(nft_id, name)
 
     /// @notice revokes multiple AENS names wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param names the AENS names to revoke
     stateful entrypoint revoke_multiple(nft_id: int, names: Set.set(string)) =
-        // TODO
-        ()
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        List.foreach(Set.to_list(names), (n) => __revoke(nft_id, n))
 
     /// @notice revokes all AENS names wrapped in the NFT, removes metadata and burns the NFT
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     stateful entrypoint revoke_all(nft_id: int) =
-        // TODO
-        ()
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        let nft_metadata_map = require_names_wrapped(nft_id)
+        List.foreach(Map.to_list(nft_metadata_map), (val) => __revoke(nft_id, Pair.fst(val)))
 
     /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
@@ -492,6 +498,13 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param data optional data to be provided to a contract receiver
     stateful entrypoint transfer_multiple_nfts(recipient: address, nft_ids: Set.set(int), data: option(string)) =
         List.foreach(Set.to_list(nft_ids), (id) => __transfer_single_nft(recipient, id, data))
+
+    stateful function __revoke(nft_id: int, name: string) =
+        let nft_metadata_map = require_name_wrapped(nft_id, name)
+        AENS.revoke(Contract.address, name)
+        put(state{ metadata[nft_id] @nft_metadata = MetadataMap(Map.delete(name, nft_metadata_map)) })
+        put(state{ name_to_token @ val = Map.delete(name, val) })
+        Chain.event(NameRevoke(name, nft_id))
 
     stateful function __transfer_single_nft(to: address, token_id: int, data: option(string)) =
         let from = require_authorized(token_id)

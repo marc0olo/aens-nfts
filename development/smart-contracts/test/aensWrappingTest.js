@@ -739,6 +739,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.reward);
       });
+
       it('extend_all_for_reward (emergency reward)', async () => {
         // prepare: claim and wrap names
         await claimNames(aensNames);
@@ -792,6 +793,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.emergency_reward);
       });
+
       it('burn & burn_multiple_nfts', async () => {
         // prepare: mint 3 different NFTs
         await contract.mint(aeSdk.selectedAddress);
@@ -808,6 +810,7 @@ describe('AENSWrapping', () => {
 
         // burn a single NFT
         const burnTx = await contract.burn(2);
+        console.log(`Gas used (burn): ${burnTx.result.gasUsed}`);
 
         // check Burn event
         assert.equal(burnTx.decodedEvents[0].name, 'Burn');
@@ -823,6 +826,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(ownedTokens, [1n, 3n]);
 
         const burnMultipleNftsTx = await contract.burn_multiple_nfts([1,3]);
+        console.log(`Gas used (burn_multiple_nfts with 2 nfts): ${burnMultipleNftsTx.result.gasUsed}`);
 
         // check Burn events
         assert.equal(burnMultipleNftsTx.decodedEvents[0].name, 'Burn');
@@ -842,6 +846,110 @@ describe('AENSWrapping', () => {
 
         // TODO test burning with expired names
         // blocked by https://github.com/aeternity/aeproject/issues/470
+      });
+
+      it('revoke_single', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // pre revocation checks
+        const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+
+        const revokeSingleTx = await contract.revoke_single(1, aensNames[0]);
+        console.log(`Gas used (revoke_single): ${revokeSingleTx.result.gasUsed}`);
+
+        // check NameRevoke event
+        assert.equal(revokeSingleTx.decodedEvents[0].name, 'NameRevoke');
+        assert.equal(revokeSingleTx.decodedEvents[0].args[0], aensNames[0]);
+        assert.equal(revokeSingleTx.decodedEvents[0].args[1], 1);
+
+        // after revocation checks
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames.slice(1), expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames.slice(1)));
+        try {
+          await aeSdk.aensQuery(aensNames[0]);
+        } catch(e) {
+          assert.equal(e.statusCode, 404);
+          assert.equal(e.details.reason, "Name revoked");
+        }
+      });
+
+      it('revoke_multiple', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // pre revocation checks
+        const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+
+        const revokeMultipleTx = await contract.revoke_multiple(1, aensNames.slice(1));
+        console.log(`Gas used (revoke_multiple) with ${aensNames.slice(1).length} names: ${revokeMultipleTx.result.gasUsed}`);
+
+        // check NameRevoke events
+        for(let i=0; i<aensNames.slice(1).length; i++) {
+          assert.equal(revokeMultipleTx.decodedEvents[i].name, 'NameRevoke');
+          assert.equal(revokeMultipleTx.decodedEvents[i].args[0], aensNames.slice(1)[aensNames.slice(1).length-(i+1)]);
+          assert.equal(revokeMultipleTx.decodedEvents[i].args[1], 1);
+        }
+
+        // after revocation checks
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [aensNames[0]], expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap([aensNames[0]]));
+        for(let i=0; i<aensNames.slice(1).length; i++) {
+          try {
+            await aeSdk.aensQuery(aensNames.slice(1)[i]);
+          } catch(e) {
+            assert.equal(e.statusCode, 404);
+            assert.equal(e.details.reason, "Name revoked");
+          }
+        }
+      });
+
+      it('revoke_all', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // pre revocation checks
+        const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
+
+        const revokeAllTx = await contract.revoke_all(1);
+        console.log(`Gas used (revoke_all) with ${aensNames.length} names: ${revokeAllTx.result.gasUsed}`);
+
+        // check NameRevoke events
+        for(let i=0; i<aensNames.length; i++) {
+          assert.equal(revokeAllTx.decodedEvents[i].name, 'NameRevoke');
+          assert.equal(revokeAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
+          assert.equal(revokeAllTx.decodedEvents[i].args[1], 1);
+        }
+
+        // after revocation checks
+        nftDataOne = (await contract.get_nft_data(1)).decodedResult;
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [], expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, new Map());
+        for(let i=0; i<aensNames.length; i++) {
+          try {
+            await aeSdk.aensQuery(aensNames[i]);
+          } catch(e) {
+            assert.equal(e.statusCode, 404);
+            assert.equal(e.details.reason, "Name revoked");
+          }
+        }
       });
     });
   });

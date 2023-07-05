@@ -57,6 +57,8 @@ contract interface IAENSWrapping : IAEX141 =
         | NameExtend(string, int, int, address)
         // name, nft_id_old, nft_id_new
         | NameTransfer(string, int, int)
+        // name, nft_id
+        | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
 
