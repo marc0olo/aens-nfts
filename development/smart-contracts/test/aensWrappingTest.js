@@ -749,6 +749,57 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[1], otherAccount.address);
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.emergency_reward);
       });
+      it('burn & burn_multiple_nfts', async () => {
+        // prepare: mint 3 different NFTs
+        await contract.mint(aeSdk.selectedAddress);
+        await contract.mint(aeSdk.selectedAddress);
+        await contract.mint(aeSdk.selectedAddress);
+
+        // checks before burning
+        let totalSupply = (await contract.total_supply()).decodedResult;
+        let nftBalance = (await contract.balance(aeSdk.selectedAddress)).decodedResult;
+        let ownedTokens = (await contract.get_owned_tokens(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(totalSupply, 3);
+        assert.equal(nftBalance, 3);
+        assert.deepEqual(ownedTokens, [1n, 2n, 3n]);
+
+        // burn a single NFT
+        const burnTx = await contract.burn(2);
+
+        // check Burn event
+        assert.equal(burnTx.decodedEvents[0].name, 'Burn');
+        assert.equal(burnTx.decodedEvents[0].args[0], aeSdk.selectedAddress);
+        assert.equal(burnTx.decodedEvents[0].args[1], 2);
+
+        // checks after burning a single nft
+        totalSupply = (await contract.total_supply()).decodedResult;
+        nftBalance = (await contract.balance(aeSdk.selectedAddress)).decodedResult;
+        ownedTokens = (await contract.get_owned_tokens(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(totalSupply, 2);
+        assert.equal(nftBalance, 2);
+        assert.deepEqual(ownedTokens, [1n, 3n]);
+
+        const burnMultipleNftsTx = await contract.burn_multiple_nfts([1,3]);
+
+        // check Burn events
+        assert.equal(burnMultipleNftsTx.decodedEvents[0].name, 'Burn');
+        assert.equal(burnMultipleNftsTx.decodedEvents[0].args[0], aeSdk.selectedAddress);
+        assert.equal(burnMultipleNftsTx.decodedEvents[0].args[1], 3);
+        assert.equal(burnMultipleNftsTx.decodedEvents[1].name, 'Burn');
+        assert.equal(burnMultipleNftsTx.decodedEvents[1].args[0], aeSdk.selectedAddress);
+        assert.equal(burnMultipleNftsTx.decodedEvents[1].args[1], 1);
+
+        // checks after burning multiple nfts
+        totalSupply = (await contract.total_supply()).decodedResult;
+        nftBalance = (await contract.balance(aeSdk.selectedAddress)).decodedResult;
+        ownedTokens = (await contract.get_owned_tokens(aeSdk.selectedAddress)).decodedResult;
+        assert.equal(totalSupply, 0);
+        assert.equal(nftBalance, 0);
+        assert.deepEqual(ownedTokens, []);
+
+        // TODO test burning with expired names
+        // blocked by https://github.com/aeternity/aeproject/issues/470
+      });
     });
   });
 });

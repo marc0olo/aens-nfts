@@ -177,13 +177,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     // burnable extension
 
     stateful entrypoint burn(token_id: int) =
-        let owner = require_authorized(token_id)
-        __remove_approval(token_id)
-        put(state{ balances[owner] @balance = balance - 1
-            , total_supply = state.total_supply - 1
-            , token_to_owner = Map.delete(token_id, state.token_to_owner)
-            , owner_to_tokens[owner] @owners_tokens = Set.delete(token_id, owners_tokens) })
-        Chain.event(Burn(owner, token_id))
+        __burn_single(token_id)
 
     // AENSWrapping
 
@@ -513,8 +507,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn
     stateful entrypoint burn_multiple_nfts(nft_ids: Set.set(int)) =
-        // TODO
-        ()
+        List.foreach(Set.to_list(nft_ids), (id) => __burn_single(id))
 
     // external helpers for AEX-141
 
@@ -522,6 +515,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         Set.to_list(Map.lookup_default(owner, state.owner_to_tokens, Set.new()))
 
     // internal helper functions
+
+    function require_expired_if_wrapped(nft_id: int) =
+        let Some(MetadataMap(nft_metadata_map)) = Map.lookup(nft_id, state.metadata)
+        if(Map.size(nft_metadata_map) > 0)
+            let Some(FixedTTL(expiration_height)) = Map.lookup(nft_id, state.token_to_name_expiration)
+            require(Chain.block_height > expiration_height, "WRAPPED_NAMES_NOT_EXPIRED")
 
     function require_can_receive_name(target_nft_id: int, target_owner: address) =
         switch(get_nft_config(target_nft_id, target_owner))
@@ -630,11 +629,18 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         if(Map.member(token_id, state.approvals))
             put(state{ approvals = Map.delete(token_id, state.approvals) })
 
-    stateful function __burn(owner: address, token_id: int) =
-        put(state{ balances[owner] @owner_balance = owner_balance - 1
+    stateful function __burn_single(token_id: int) =
+        let owner = require_authorized(token_id)
+        require_expired_if_wrapped(token_id)
+        __remove_approval(token_id)
+        put(state{ balances[owner] @balance = balance - 1
             , total_supply = state.total_supply - 1
             , token_to_owner = Map.delete(token_id, state.token_to_owner)
-            , owner_to_tokens[owner] @owners_tokens = Set.delete(token_id, owners_tokens) })
+            , owner_to_tokens[owner] @owners_tokens = Set.delete(token_id, owners_tokens)
+            , token_to_name_expiration = Map.delete(token_id, state.token_to_name_expiration)
+            , token_to_config = Map.delete(token_id, state.token_to_config)
+            , metadata = Map.delete(token_id, state.metadata) })
+        Chain.event(Burn(owner, token_id))
 
     function get_possible_reward(owner: address, owner_cfg : config, expiration_height: int) : int =
         let delta = expiration_height - Chain.block_height
