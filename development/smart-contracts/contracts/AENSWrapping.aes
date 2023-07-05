@@ -264,43 +264,60 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @notice adds / replaces a pointer of the AENS name while keeping existing pointers
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
-    /// @param pointer_key the key of the pointer
-    /// @param pointer_value the object to point to (account, channel, contract, oracle)
-    stateful entrypoint add_pointer(nft_id: int, name: string, pointer_key: string, pointer_value: AENS.pointee) =
-        // TODO
-        ()
+    /// @param key the key of the pointer
+    /// @param pt the object to point to (account, channel, contract, oracle)
+    stateful entrypoint add_or_replace_pointer(nft_id: int, name: string, key: string, pt: AENS.pointee) =
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        require_name_wrapped(nft_id, name)
+        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+        AENS.update(Contract.address, name, None, None, Some(ptrs{[key] = pt}))
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint add_pointers(nft_id: int, name: string, pointers: map(string, AENS.pointee), keep_existing: bool) =
-        // TODO
-        ()
+    stateful entrypoint add_or_replace_pointers(nft_id: int, name: string, pointers: map(string, AENS.pointee), keep_existing: bool) =
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        require_name_wrapped(nft_id, name)
+        if(keep_existing)
+            let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+            // TODO add / replace provided pointers
+            ()
+        else
+            AENS.update(Contract.address, name, None, None, Some(pointers))
 
     /// @notice removes a pointer of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be removed
-    /// @param pointer_key the key of the pointer
-    stateful entrypoint remove_pointer(nft_id: int, name: string, pointer_key: string) =
-        // TODO
-        ()
+    /// @param key the key of the pointer
+    stateful entrypoint remove_pointer(nft_id: int, name: string, key: string) =
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        require_name_wrapped(nft_id, name)
+        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+        AENS.update(Contract.address, name, None, None, Some(Map.delete(key, ptrs)))
 
     /// @notice removes multiple pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be removed
-    /// @param pointer_keys a set of pointer keys
-    stateful entrypoint remove_pointers(nft_id: int, name: string, pointer_keys: Set.set(string)) =
-        // TODO
-        ()
+    /// @param keys a set of pointer keys
+    stateful entrypoint remove_pointers(nft_id: int, name: string, keys: Set.set(string)) =
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        require_name_wrapped(nft_id, name)
+        // TODO remove pointers based on provided keys
 
     /// @notice removes all pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be removed
     stateful entrypoint remove_all_pointers(nft_id: int, name: string) =
-        // TODO
-        ()
+        require_authorized(nft_id)
+        require_not_expired(nft_id)
+        require_name_wrapped(nft_id, name)
+        AENS.update(Contract.address, name, None, None, Some({}))
 
     /// @notice revokes a single AENS name wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into

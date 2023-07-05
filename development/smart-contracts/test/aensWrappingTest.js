@@ -951,6 +951,43 @@ describe('AENSWrapping', () => {
           }
         }
       });
+
+      it('add_or_replace_pointer', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // check before adding pointer
+        let nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, []);
+
+        // add pointer
+        let addOrReplacePointerTx = await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]})
+        console.log(`Gas used (add_or_replace_pointer): ${addOrReplacePointerTx.result.gasUsed}`);
+
+        // check after adding pointer
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, [
+          {
+            key: 'account_pubkey',
+            id: aeSdk.selectedAddress
+          }
+        ]);
+
+        // replace pointer
+        const otherAccount = utils.getDefaultAccounts()[1];
+        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [otherAccount.address]})
+
+        // check after replacing pointer
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, [
+          {
+            key: 'account_pubkey',
+            id: otherAccount.address
+          }
+        ]);
+      });
     });
   });
 });

@@ -131,27 +131,27 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice adds / replaces a pointer of the AENS name while keeping existing pointers
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
-    /// @param pointer_key the key of the pointer
-    /// @param pointer_value the object to point to (account, channel, contract, oracle)
-    stateful entrypoint add_pointer : (int, string, string, AENS.pointee) => unit
+    /// @param key the key of the pointer
+    /// @param pt the object to point to (account, channel, contract, oracle)
+    stateful entrypoint add_or_replace_pointer : (int, string, string, AENS.pointee) => unit
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
-    /// @param name the AENS name where the pointer will be added / replaced
+    /// @param name the AENS name where the pointers will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint add_pointers : (int, string, map(string, AENS.pointee), bool) => unit
+    stateful entrypoint add_or_replace_pointers : (int, string, map(string, AENS.pointee), bool) => unit
 
     /// @notice removes a pointer of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be removed
-    /// @param pointer_key the key of the pointer
+    /// @param key the key of the pointer
     stateful entrypoint remove_pointer : (int, string, string) => unit
 
     /// @notice removes multiple pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be removed
-    /// @param pointer_keys a set of pointer keys
+    /// @param keys a set of pointer keys
     stateful entrypoint remove_pointers : (int, string, Set.set(string)) => unit
 
     /// @notice removes all pointers of the AENS name
