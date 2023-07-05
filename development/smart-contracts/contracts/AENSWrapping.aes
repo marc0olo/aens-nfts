@@ -107,18 +107,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         Map.lookup(token_id, state.token_to_owner)
 
     stateful entrypoint transfer(to: address, token_id: int, data: option(string)) =
-        let from = require_authorized(token_id)
-        require(from != to, "SENDER_MUST_NOT_BE_RECEIVER")
-        __remove_approval(token_id)
-        put(state{ balances[from] @balance1 = balance1 - 1
-            , balances[to = 0] @balance2 = balance2 + 1
-            , token_to_owner[token_id] = to
-            , owner_to_tokens[from] @from_tokens = Set.delete(token_id, from_tokens)
-            , owner_to_tokens[to = Set.new()] @to_tokens = Set.insert(token_id, to_tokens)
-            , token_to_config @token_config = Map.delete(token_id, token_config) })
-        switch(invoke_nft_receiver(Some(from), to, token_id, data))
-            (true, false) => abort("SAFE_TRANSFER_FAILED")
-            _ => Chain.event(Transfer(from, to, token_id))
+        __transfer_single_nft(to, token_id, data)
 
     stateful entrypoint transfer_to_contract(token_id: int) =
         let to = Call.caller
@@ -500,9 +489,23 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @notice transfers a set of NFTs to the desired recipient
     /// @param recipient the address to become new owner of the NFTs
     /// @param nft_ids the ids of the NFTs to transfer
-    stateful entrypoint transfer_multiple_nfts(recipient: address, nft_ids: Set.set(int)) =
-        // TODO
-        ()
+    /// @param data optional data to be provided to a contract receiver
+    stateful entrypoint transfer_multiple_nfts(recipient: address, nft_ids: Set.set(int), data: option(string)) =
+        List.foreach(Set.to_list(nft_ids), (id) => __transfer_single_nft(recipient, id, data))
+
+    stateful function __transfer_single_nft(to: address, token_id: int, data: option(string)) =
+        let from = require_authorized(token_id)
+        require(from != to, "SENDER_MUST_NOT_BE_RECEIVER")
+        __remove_approval(token_id)
+        put(state{ balances[from] @balance1 = balance1 - 1
+            , balances[to = 0] @balance2 = balance2 + 1
+            , token_to_owner[token_id] = to
+            , owner_to_tokens[from] @from_tokens = Set.delete(token_id, from_tokens)
+            , owner_to_tokens[to = Set.new()] @to_tokens = Set.insert(token_id, to_tokens)
+            , token_to_config @token_config = Map.delete(token_id, token_config) })
+        switch(invoke_nft_receiver(Some(from), to, token_id, data))
+            (true, false) => abort("SAFE_TRANSFER_FAILED")
+            _ => Chain.event(Transfer(from, to, token_id))
 
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn

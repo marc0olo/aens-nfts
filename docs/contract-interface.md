@@ -257,7 +257,8 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice transfers a set of NFTs to the desired recipient
     /// @param recipient the address to become new owner of the NFTs
     /// @param nft_ids the ids of the NFTs to transfer
-    stateful entrypoint transfer_multiple_nfts : (address, Set.set(int)) => unit
+    /// @param data optional data to be provided to a contract receiver
+    stateful entrypoint transfer_multiple_nfts : (address, Set.set(int), option(string)) => unit
 
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn

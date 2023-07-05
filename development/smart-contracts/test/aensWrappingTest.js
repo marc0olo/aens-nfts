@@ -527,6 +527,49 @@ describe('AENSWrapping', () => {
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
 
+      it('transfer_multiple_nfts', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        await contract.mint(aeSdk.selectedAddress);
+  
+        const otherAccount = utils.getDefaultAccounts()[1];
+
+        // check owner before transfer
+        await expectNameOwnerContract(aensNames, aeSdk.selectedAddress);
+        let ownerDryRunTx = await contract.owner(1);
+        assert.equal(ownerDryRunTx.decodedResult, aeSdk.selectedAddress);
+        ownerDryRunTx = await contract.owner(2);
+        assert.equal(ownerDryRunTx.decodedResult, aeSdk.selectedAddress);
+        let resolveNftIdAndOwnerTxDryRun = await contract.resolve_nft_id_and_owner(aensNames[0]);
+        assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, aeSdk.selectedAddress]);
+
+        // transfer NFTs to other account
+        const transferMultipleNftsTx = await contract.transfer_multiple_nfts(otherAccount.address, [1, 2]);
+        console.log(`Gas used (transfer_multiple_nfts): ${transferMultipleNftsTx.result.gasUsed}`);
+
+        // check Transfer events
+        assert.equal(transferMultipleNftsTx.decodedEvents[0].name, 'Transfer');
+        assert.equal(transferMultipleNftsTx.decodedEvents[0].args[0], aeSdk.selectedAddress);
+        assert.equal(transferMultipleNftsTx.decodedEvents[0].args[1], otherAccount.address);
+        assert.equal(transferMultipleNftsTx.decodedEvents[0].args[2], 2);
+        assert.equal(transferMultipleNftsTx.decodedEvents[1].name, 'Transfer');
+        assert.equal(transferMultipleNftsTx.decodedEvents[1].args[0], aeSdk.selectedAddress);
+        assert.equal(transferMultipleNftsTx.decodedEvents[1].args[1], otherAccount.address);
+        assert.equal(transferMultipleNftsTx.decodedEvents[1].args[2], 1);
+
+        // check after transfer
+        await expectNameOwnerContract(aensNames, otherAccount.address);
+        ownerDryRunTx = await contract.owner(1);
+        assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
+        ownerDryRunTx = await contract.owner(2);
+        assert.equal(ownerDryRunTx.decodedResult, otherAccount.address);
+        resolveNftIdAndOwnerTxDryRun = await contract.resolve_nft_id_and_owner(aensNames[0]);
+        assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
+      });
+
       it('extend_all', async () => {
         // prepare: claim and wrap names
         await claimNames(aensNames);
