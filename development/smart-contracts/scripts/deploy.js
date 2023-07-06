@@ -1,15 +1,14 @@
 require('dotenv').config({ path: '.env.local' });
 const fs = require('fs');
 const { AeSdk, CompilerHttp, MemoryAccount, Node } = require('@aeternity/aepp-sdk');
-const { utils } = require('@aeternity/aeproject');
 
 const shutdown = (varName) => {
     console.error(`Missing ENV variable: ${varName}`);
     process.exit(1);
 }
 
-if(!process.env.SECRET_KEY) {
-    shutdown('SECRET_KEY');
+if(!process.env.SECRET_KEY_DEPLOYER) {
+    shutdown('SECRET_KEY_DEPLOYER');
 }
 
 // run 'generateBytecodeAndAci.js' first
@@ -33,10 +32,9 @@ const main = async () => {
         nodes: [
           { name: AE_NETWORK, instance: node },
         ],
-        accounts: [new MemoryAccount(process.env.SECRET_KEY)],
+        accounts: [new MemoryAccount(process.env.SECRET_KEY_DEPLOYER)],
     });
     const contract = await aeSdk.initializeContract({ aci, bytecode });
-    console.log(contract);
     await contract.init();
     console.log(`Deployed at: ${contract.$options.address}`);
 }
