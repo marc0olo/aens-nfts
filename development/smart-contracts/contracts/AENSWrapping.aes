@@ -271,7 +271,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
         let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
-        AENS.update(Contract.address, name, None, None, Some(ptrs{[key] = pt}))
+        let updated_pointers = ptrs{[key] = pt}
+        require_matching_pointer_limit(updated_pointers)
+        AENS.update(Contract.address, name, None, None, Some(updated_pointers))
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -283,10 +285,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
         if(keep_existing)
-            let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
-            // TODO add / replace provided pointers
-            ()
+            let Some(AENS.Name(_, _, old_ptrs)) = AENS.lookup(name)
+            let merged_ptrs = merge_maps(old_ptrs, pointers)
+            require_matching_pointer_limit(merged_ptrs)
+            AENS.update(Contract.address, name, None, None, Some(pointers))
         else
+            require_matching_pointer_limit(pointers)
             AENS.update(Contract.address, name, None, None, Some(pointers))
 
     /// @notice removes a pointer of the AENS name
@@ -308,7 +312,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
-        // TODO remove pointers based on provided keys
+        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+        let updated_ptrs = delete_keys(ptrs, keys)
+        AENS.update(Contract.address, name, None, None, Some(updated_ptrs))
+
 
     /// @notice removes all pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -549,6 +556,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     // internal helper functions
 
+    function require_matching_pointer_limit(pointers: map(string, AENS.pointee)) =
+        require(Map.size(pointers) =< 32, "POINTER_LIMIT_EXCEEDED")
+
     function require_expired_if_wrapped(nft_id: int) =
         let Some(MetadataMap(nft_metadata_map)) = Map.lookup(nft_id, state.metadata)
         if(Map.size(nft_metadata_map) > 0)
@@ -712,3 +722,15 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         switch(v)
             true => "true"
             false => "false"
+
+    function merge_maps(old: map('a, 'b), new: map('a, 'b)) : map('a, 'b) =
+        List.foldl(insert, old, Map.to_list(new))
+
+    function delete_keys(m: map('a, 'b), keys: Set.set('a)) =
+        List.foldl(remove, m, Set.to_list(keys))
+    
+    function insert(m: map('a, 'b), (k, v): 'a * 'b) =
+        m{[k] = v}
+
+    function remove(m: map('a, 'b), k: 'a) =
+        Map.delete(k, m)

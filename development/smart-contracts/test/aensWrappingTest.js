@@ -988,6 +988,144 @@ describe('AENSWrapping', () => {
           }
         ]);
       });
+
+      it('add_or_replace_pointers', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // check before adding pointer
+        let nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, []);
+
+        // add pointers
+        const pointers = new Map();
+        for(let i=0; i<30; i++) {
+          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+        }
+        let addOrReplacePointersTx = await contract.add_or_replace_pointers(1, aensNames[0], pointers, true)
+        console.log(`Gas used (add_or_replace_pointers) with ${pointers.size} pointers: ${addOrReplacePointersTx.result.gasUsed}`);
+
+        const expectedPointers = [];
+        for(let i=0; i<30; i++) {
+          expectedPointers.push(
+            {
+              key: `pointer-${i+1}`,
+              id: aeSdk.selectedAddress
+            }
+          );
+        }
+        // check after adding pointers
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.sameDeepMembers(nameInstance.pointers, expectedPointers);
+
+        const otherAccount = utils.getDefaultAccounts()[1];
+        const updatedPointers = new Map();
+        for(let i=0; i<32; i++) {
+          updatedPointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [otherAccount.address]});
+        }
+
+        addOrReplacePointersTx = await contract.add_or_replace_pointers(1, aensNames[0], updatedPointers, true);
+        console.log(`Gas used (add_or_replace_pointers) with ${updatedPointers.size} pointers: ${addOrReplacePointersTx.result.gasUsed}`);
+
+        const expectedUpdatedPointers = [];
+        for(let i=0; i<32; i++) {
+          expectedUpdatedPointers.push(
+            {
+              key: `pointer-${i+1}`,
+              id: otherAccount.address
+            }
+          );
+        }
+
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.sameDeepMembers(nameInstance.pointers, expectedUpdatedPointers);
+
+        const replacePointers = new Map();
+        for(let i=0; i<7; i++) {
+          replacePointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+        }
+        // don't keep existing pointers
+        await contract.add_or_replace_pointers(1, aensNames[0], replacePointers, false);
+        const expectedReplacedPointers = [];
+        for(let i=0; i<7; i++) {
+          expectedReplacedPointers.push(
+            {
+              key: `pointer-${i+1}`,
+              id: aeSdk.selectedAddress
+            }
+          );
+        }
+
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.sameDeepMembers(nameInstance.pointers, expectedReplacedPointers);
+      });
+
+      it('remove_pointer', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // add pointer
+        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]})
+
+        // check before removing pointer
+        let nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, [
+          {
+            key: 'account_pubkey',
+            id: aeSdk.selectedAddress
+          }
+        ]);
+
+        // remove pointer
+        const removePointerTx = await contract.remove_pointer(1, aensNames[0], "account_pubkey");
+        console.log(`Gas used (remove_pointer): ${removePointerTx.result.gasUsed}`);
+
+        // check after removing pointer
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, []);
+      });
+
+      it('remove_pointers & remove_all_pointers', async () => {
+        // prepare: claim and wrap names
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        await contract.wrap_and_mint(namesDelegationSigs);
+
+        // add pointers
+        const pointers = new Map();
+        for(let i=0; i<32; i++) {
+          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+        }
+        await contract.add_or_replace_pointers(1, aensNames[0], pointers, false);
+
+        // remove pointers
+        const removePointerTx = await contract.remove_pointers(1, aensNames[0], [...pointers.keys()].slice(1));
+        console.log(`Gas used (remove_pointers) with ${pointers.size - 1}: ${removePointerTx.result.gasUsed}`);
+
+        // check after removing pointers
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, [
+          {
+            key: 'pointer-1',
+            id: aeSdk.selectedAddress
+          }
+        ]);
+
+        // add pointers again
+        await contract.add_or_replace_pointers(1, aensNames[0], pointers, false);
+
+        // remove all pointers
+        const removeAllPointersTx = await contract.remove_all_pointers(1, aensNames[0]);
+        console.log(`Gas used (remove_all_pointers): ${removeAllPointersTx.result.gasUsed}`);
+
+        // check after removing all pointers
+        nameInstance = await aeSdk.aensQuery(aensNames[0]);
+        assert.deepEqual(nameInstance.pointers, []);
+      });
     });
   });
 });
