@@ -169,7 +169,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param names the AENS names to revoke
     stateful entrypoint revoke_multiple : (int, Set.set(string)) => unit
 
-    /// @notice revokes all AENS names wrapped in the NFT, removes metadata and burns the NFT
+    /// @notice revokes all AENS names wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     stateful entrypoint revoke_all : (int) => unit
 
@@ -185,7 +185,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param names the AENS names to transfer
     stateful entrypoint transfer_multiple : (int, int, Set.set(string)) => unit
 
-    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names, burns the old NFT
+    /// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id_old the id of the NFT that currently wraps the AENS name
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     stateful entrypoint transfer_all : (int, int) => unit
@@ -215,7 +215,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param recipient the address that should receive the AENS name
     stateful entrypoint unwrap_multiple : (int, Set.set(string), option(address)) => unit
 
-    /// @notice transfers all AENS names back to the owner or to another defined recipient, updates metadata, burns the NFT
+    /// @notice transfers all AENS names back to the owner or to another defined recipient, updates metadata
     /// @param nft_id the id of the NFT that currently wraps the AENS name
     /// @param recipient the address that should receive the AENS name
     stateful entrypoint unwrap_all : (int, option(address)) => unit

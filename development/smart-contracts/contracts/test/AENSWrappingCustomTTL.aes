@@ -1,12 +1,12 @@
 @compiler >= 7
 
-include "./interfaces/IAEX141.aes"
-include "./interfaces/IAEX141NFTReceiver.aes"
-include "./interfaces/IAENSWrapping.aes"
+include "../interfaces/IAEX141.aes"
+include "../interfaces/IAEX141NFTReceiver.aes"
+include "../interfaces/IAENSWrapping.aes"
 
 include "Pair.aes"
 
-main contract AENSWrapping : IAEX141, IAENSWrapping =
+main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
 
     datatype metadata_type = URL | OBJECT_ID | MAP
     datatype metadata = MetadataIdentifier(string) | MetadataMap(map(string, string))
@@ -72,7 +72,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         // nft_id, caller, reward
         | Reward(int, address, int)
 
-    stateful entrypoint init() =
+    stateful entrypoint init(ttl: int) =
         { owner = Contract.creator,
           meta_info = { name = "Wrapped AENS", symbol = "WAENS", base_url = None, metadata_type = MAP },
           token_to_owner = {},
@@ -82,7 +82,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           token_to_config = {},
           account_to_config = {},
           account_to_reward_pool = {},
-          max_name_ttl = RelativeTTL(180_000),
+          max_name_ttl = RelativeTTL(ttl),
           balances = {},
           approvals = {},
           operators = {},

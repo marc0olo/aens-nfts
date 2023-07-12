@@ -1,13 +1,25 @@
-const { assert } = require('chai');
+const { assert, expect, use } = require('chai');
 const { utils } = require('@aeternity/aeproject');
 
-const CONTRACT_SOURCE = './contracts/AENSWrapping.aes';
+const chaiAsPromised = require('chai-as-promised');
+
+use(chaiAsPromised);
+
+const AENS_WRAPPING_SOURCE = './contracts/AENSWrapping.aes';
+const DUMMY_SOURCE = './contracts/test/Dummy.aes';
+const NFT_RECEIVER_SOURCE = './contracts/test/NFTReceiver.aes';
 
 describe('AENSWrapping', () => {
   let aeSdk;
   let contract;
   let contractId;
   let contractAccountAddress;
+  let dummyContract;
+  let dummyContractId;
+  let dummyContractAddress;
+  let nftReceiverContract;
+  let nftReceiverContractId;
+  let nftReceiverContractAddress;
 
   const aensNames = [
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.chain",
@@ -52,17 +64,29 @@ describe('AENSWrapping', () => {
   before(async () => {
     aeSdk = await utils.getSdk();
 
-    // a filesystem object must be passed to the compiler if the contract uses custom includes
-    const fileSystem = utils.getFilesystem(CONTRACT_SOURCE);
-
-    // get content of contract
-    const sourceCode = utils.getContractContent(CONTRACT_SOURCE);
-
     // initialize the contract instance
-    contract = await aeSdk.initializeContract({ sourceCode, fileSystem });
+    contract = await aeSdk.initializeContract({
+      sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
+      fileSystem: utils.getFilesystem(AENS_WRAPPING_SOURCE)
+    });
     await contract.$deploy([]);
     contractId = contract.$options.address;
     contractAccountAddress = contractId.replace("ct_", "ak_");
+
+    dummyContract = await aeSdk.initializeContract({
+      sourceCode: utils.getContractContent(DUMMY_SOURCE)
+    });
+    await dummyContract.$deploy([]);
+    dummyContractId = dummyContract.$options.address;
+    dummyContractAddress = dummyContractId.replace("ct_", "ak_");
+
+    nftReceiverContract = await aeSdk.initializeContract({
+      sourceCode: utils.getContractContent(NFT_RECEIVER_SOURCE),
+      fileSystem: utils.getFilesystem(NFT_RECEIVER_SOURCE)
+    });
+    await nftReceiverContract.$deploy([]);
+    nftReceiverContractId = nftReceiverContract.$options.address;
+    nftReceiverContractAddress = nftReceiverContractId.replace("ct_", "ak_");
 
     // create a snapshot of the blockchain state
     await utils.createSnapshot(aeSdk);
@@ -421,6 +445,9 @@ describe('AENSWrapping', () => {
         // check TTL / expiration height of nft & names before transfer
         const expirationHeightNftTwo = (await contract.get_expiration_by_nft_id(2)).decodedResult;
   
+        // allow token 2 to receive names
+        await contract.set_global_config(globalConfig, { onAccount: otherAccount });
+
         // transfer multiple names to another NFT
         const transferAllTx = await contract.transfer_all(1, 2);
         console.log(`Gas used (transfer_all for ${aensNames.length} names): ${transferAllTx.result.gasUsed}`);
@@ -1125,6 +1152,170 @@ describe('AENSWrapping', () => {
         // check after removing all pointers
         nameInstance = await aeSdk.aensQuery(aensNames[0]);
         assert.deepEqual(nameInstance.pointers, []);
+      });
+    });
+
+    describe('Abort paths', () => {
+      const otherAccount = utils.getDefaultAccounts()[1];
+
+      it('mint', async () => {
+        await expect(
+          contract.mint(otherAccount.address))
+          .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_RECIPIENT"`);
+
+        await expect(
+          contract.mint(otherAccount.address, {'MetadataMap': [new Map()]}))
+          .to.be.rejectedWith(`Invocation failed: "MINTING_WITH_METADATA_NOT_ALLOWED"`);
+      });
+
+      it('transfer', async () => {
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await expect(
+          contract.transfer(aeSdk.selectedAddress, tokenId))
+          .to.be.rejectedWith(`Invocation failed: "SENDER_MUST_NOT_BE_RECEIVER"`);
+
+        await expect(
+          contract.transfer(dummyContractAddress, tokenId))
+          .to.be.rejectedWith(`Invocation failed: "SAFE_TRANSFER_FAILED"`);
+        
+        await expect(
+          contract.transfer(otherAccount.address, tokenId, undefined, { onAccount: otherAccount }))
+          .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
+      });
+
+      it('burn', async () => {
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await expect(
+          contract.burn(tokenId + 1n))
+          .to.be.rejectedWith(`Invocation failed: "TOKEN_NOT_EXISTS"`);
+
+        await expect(
+          contract.burn(tokenId, { onAccount: otherAccount }))
+          .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
+
+        const wrapSingleTestName = "wrapSingleTestName.chain";
+        const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
+        await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
+        const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName]);
+        await contract.wrap_single(tokenId, wrapSingleTestName, delegationSig);
+
+        await expect(
+          contract.burn(tokenId))
+          .to.be.rejectedWith(`Invocation failed: "WRAPPED_NAMES_NOT_EXPIRED"`);
+      });
+
+      it('wrap_and_mint', async () => {
+        await claimNames(aensNames);
+        const namesDelegationWrongSigs = await getDelegationSignatures(aensNames, contractId, otherAccount);
+        await expect(
+          contract.wrap_and_mint(namesDelegationWrongSigs))
+          .to.be.rejectedWith(`Invocation failed: "Error in aens_transfer: bad_signature"`);
+      });
+
+      it('wrap_single', async () => {
+        // workaround due to https://github.com/aeternity/aeproject/issues/470
+        const AENS_WRAPPING_CUSTOM_TTL_SOURCE = './contracts/test/AENSWrappingCustomTTL.aes';
+        const contractLowTtl = await aeSdk.initializeContract({
+          sourceCode: utils.getContractContent(AENS_WRAPPING_CUSTOM_TTL_SOURCE),
+          fileSystem: utils.getFilesystem(AENS_WRAPPING_CUSTOM_TTL_SOURCE)
+        });
+        await contractLowTtl.init(21);
+
+        const tokenId = (await contractLowTtl.mint(aeSdk.selectedAddress)).decodedResult;
+
+        // let name ttl in NFT expire
+        await utils.awaitKeyBlocks(aeSdk, 22);
+
+        const wrapSingleTestName = "wrapSingleTestName.chain";
+        const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
+        await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
+        const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName]);
+
+        await expect(
+          contractLowTtl.wrap_single(tokenId, wrapSingleTestName, delegationSig))
+          .to.be.rejectedWith(`Invocation failed: "NAMES_IN_NFT_EXPIRED"`);
+      });
+
+      it('add_or_replace_pointer(s)', async () => {
+        const singleNameArray = ["wrapSingleTestName.chain"]
+        let tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await expect(
+          contract.add_or_replace_pointer(tokenId, singleNameArray[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]}))
+          .to.be.rejectedWith(`Invocation failed: "NAME_NOT_WRAPPED"`);
+
+        await claimNames(singleNameArray);
+        const namesDelegationSigs = await getDelegationSignatures(singleNameArray, contractId);
+        tokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+        const pointers = new Map();
+        for(let i=0; i<33; i++) {
+          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+        }
+
+        await expect(
+          contract.add_or_replace_pointers(tokenId, singleNameArray[0], pointers, false))
+          .to.be.rejectedWith(`Invocation failed: "POINTER_LIMIT_EXCEEDED"`);
+      });
+
+      it('transfer_single & transfer_multiple', async () => {
+        await claimNames(aensNames);
+        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+
+        await expect(
+          contract.transfer_single(sourceTokenId, 1337, aensNames[0]))
+          .to.be.rejectedWith(`Invocation failed: "TOKEN_NOT_EXISTS"`);
+
+        const firstTargetNftId = (await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount })).decodedResult;
+
+        await expect(
+          contract.transfer_single(sourceTokenId, firstTargetNftId, aensNames[0]))
+          .to.be.rejectedWith(`Invocation failed: "RECEIVING_NAME_NOT_ALLOWED"`);
+
+        // set global config to allow receiving names
+        await contract.set_global_config(globalConfig, { onAccount: otherAccount });
+        // passes now
+        await contract.transfer_single(sourceTokenId, firstTargetNftId, aensNames[0]);
+
+        const nftConfig = {
+          reward: 1n,
+          reward_block_window: 10n,
+          emergency_reward: 1_000n,
+          emergency_reward_block_window: 1n,
+          can_receive_from_others: false,
+          burnable_if_empty: false
+        }
+        // mint second target nft and set nft config to disallow receiving names and overrule global cfg
+        const secondTargetNftId = (await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount })).decodedResult;        
+        await contract.set_nft_config(secondTargetNftId, nftConfig, { onAccount: otherAccount });
+
+        await expect(
+          contract.transfer_multiple(sourceTokenId, secondTargetNftId, aensNames.slice(1)))
+          .to.be.rejectedWith(`Invocation failed: "RECEIVING_NAME_NOT_ALLOWED"`);
+
+        // passes because firstTargetNft can still receive
+        await contract.transfer_multiple(sourceTokenId, firstTargetNftId, aensNames.slice(1));
+      });
+    });
+
+    describe('NFT Receiver', () => {
+      it('failed transfer', async () => {
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+        await expect(
+          contract.transfer(nftReceiverContractAddress, tokenId, "should fail"))
+          .to.be.rejectedWith(`Invocation failed: "SAFE_TRANSFER_FAILED"`);
+      });
+
+      it('successful transfer', async () => {
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await contract.transfer(nftReceiverContractAddress, tokenId);
+        assert.equal(nftReceiverContractAddress, (await contract.owner(tokenId)).decodedResult);
+
+        const originalOwner = (await nftReceiverContract.get_nft_owner(contractId, tokenId)).decodedResult;
+        assert.equal(originalOwner, aeSdk.selectedAddress);
       });
     });
   });
