@@ -543,52 +543,6 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      it('transfer_single_authorized', async () => {
-        // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
-  
-        // prepare: mint an empty NFT on other account
-        const otherAccount = utils.getDefaultAccounts()[1];
-        await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount });
-
-        // create delegation signature for recipient of name
-        const delegationSig = await aeSdk.createDelegationSignature(contractId, [aensNames[0]], { onAccount: otherAccount });
-
-        // transfer a single name to another NFT
-        const transferSingleAuthorizedTx = await contract.transfer_single_authorized(1, 2, aensNames[0], delegationSig);
-        console.log(`Gas used (transfer_single_authorized): ${transferSingleAuthorizedTx.result.gasUsed}`);
-
-        // check NameTransfer event
-        assert.equal(transferSingleAuthorizedTx.decodedEvents[0].name, 'NameTransfer');
-        assert.equal(transferSingleAuthorizedTx.decodedEvents[0].args[0], aensNames[0]);
-        assert.equal(transferSingleAuthorizedTx.decodedEvents[0].args[1], 1);
-        assert.equal(transferSingleAuthorizedTx.decodedEvents[0].args[2], 2);
-      });
-
-      it('transfer_multiple_authorized', async () => {
-        // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
-  
-        // prepare: mint an empty NFT on other account
-        const otherAccount = utils.getDefaultAccounts()[1];
-        await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount });
-  
-        // create delegation signatures for recipient
-        const namesDelegationSigsRecipient = await getDelegationSignatures(aensNames, contractId, otherAccount);
-
-        // transfer multiple names to another NFT
-        const transferMultipleAuthorizedTx = await contract.transfer_multiple_authorized(1, 2, namesDelegationSigsRecipient);
-        console.log(`Gas used (transfer_multiple_authorized with ${aensNames.length} names): ${transferMultipleAuthorizedTx.result.gasUsed}`);
-
-        // check NameTransfer event
-        for(let i=0; i<aensNames.length; i++) {
-          assert.equal(transferMultipleAuthorizedTx.decodedEvents[i].name, 'NameTransfer');
-          assert.equal(transferMultipleAuthorizedTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
-          assert.equal(transferMultipleAuthorizedTx.decodedEvents[i].args[1], 1);
-          assert.equal(transferMultipleAuthorizedTx.decodedEvents[i].args[2], 2);
-        }
-      });
-
       it('transfer (NFT)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);

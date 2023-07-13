@@ -190,19 +190,6 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
     stateful entrypoint transfer_all : (int, int) => unit
 
-    /// @notice transfers a single AENS name to another NFT by requiring explicit authorization of the recipient via delegation signature. can be used if can_receive_from_others is false
-    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
-    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
-    /// @param name the AENS name to transfer
-    /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_new
-    stateful entrypoint transfer_single_authorized : (int, int, string, signature) => unit
-
-    /// @notice transfers multiple AENS names to another NFT by requiring explicit authorization of the recipient via delegation signatures. can be used if can_receive_from_others is false
-    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
-    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint transfer_multiple_authorized : (int, int, map(string, signature)) => unit
-
     /// @notice transfers the AENS name back to the owner or to another defined recipient, updates metadata
     /// @param nft_id the id of the NFT that currently wraps the AENS name
     /// @param name the AENS name to transfer

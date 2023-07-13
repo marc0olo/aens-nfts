@@ -42,6 +42,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         , token_to_config: map(int, config)
         , account_to_config: map(address, config)
         , account_to_reward_pool: map(address, int)
+        , name_limit: int
         , max_name_ttl: Chain.ttl
         , balances: map(address, int)
         , approvals: map(int, address)
@@ -73,7 +74,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         | Reward(int, address, int)
 
     stateful entrypoint init(ttl: int) =
-        { owner = Contract.creator,
+        { owner = Contract.creator, // TODO owner related actions (e.g. update max_name_ttl, name_limit or migration related actions)
           meta_info = { name = "Wrapped AENS", symbol = "WAENS", base_url = None, metadata_type = MAP },
           token_to_owner = {},
           owner_to_tokens = {},
@@ -82,6 +83,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
           token_to_config = {},
           account_to_config = {},
           account_to_reward_pool = {},
+          name_limit = 100,
           max_name_ttl = RelativeTTL(ttl),
           balances = {},
           approvals = {},
@@ -237,6 +239,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id
     stateful entrypoint wrap_and_mint(names_delegation_sigs: map(string, signature)) : int =
+        require_name_limit_not_exceeded(0, Map.size(names_delegation_sigs))
         let token_id = __mint(Call.caller, None)
         let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
         let name_expiration_height = to_fixed_ttl(state.max_name_ttl)
@@ -251,6 +254,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
     stateful entrypoint wrap_single(nft_id: int, name: string, delegation_sig: signature) =
         require_authorized(nft_id)
         let expiration_height = require_not_expired(nft_id)
+        require_name_limit_not_exceeded(get_wrap_count(nft_id), 1)
         __claim_and_assign((name, delegation_sig), nft_id, expiration_height)
 
     /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names
@@ -259,6 +263,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
     stateful entrypoint wrap_multiple(nft_id: int, names_delegation_sigs: map(string, signature)) =
       require_authorized(nft_id)
       let expiration_height = require_not_expired(nft_id)
+      require_name_limit_not_exceeded(get_wrap_count(nft_id), Map.size(names_delegation_sigs))
       let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
       List.foreach(names_delegation_sigs_list, (val) => __claim_and_assign(val, nft_id, expiration_height))
 
@@ -360,6 +365,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         let target_owner = require_exists(nft_id_new)
         require_not_expired(nft_id_old)
         let new_expiration_height = require_not_expired(nft_id_new)
+        require_name_limit_not_exceeded(get_wrap_count(nft_id_new), 1)
         if(current_owner != target_owner)
             require_can_receive_name(nft_id_new, target_owner)
         __transfer_single_common(nft_id_old, nft_id_new, name, new_expiration_height)
@@ -373,6 +379,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         let target_owner = require_exists(nft_id_new)
         require_not_expired(nft_id_old)
         let new_expiration_height = require_not_expired(nft_id_new)
+        require_name_limit_not_exceeded(get_wrap_count(nft_id_new), Set.size(names))
         if(current_owner != target_owner)
             require_can_receive_name(nft_id_new, target_owner)
         List.foreach(Set.to_list(names), (n) => __transfer_single_common(nft_id_old, nft_id_new, n, new_expiration_height))
@@ -386,32 +393,10 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         require_not_expired(nft_id_old)
         let new_expiration_height = require_not_expired(nft_id_new)
         let nft_metadata_map = require_names_wrapped(nft_id_old)
+        require_name_limit_not_exceeded(get_wrap_count(nft_id_new), Map.size(nft_metadata_map))
         if(current_owner != target_owner)
             require_can_receive_name(nft_id_new, target_owner)
         List.foreach(Map.to_list(nft_metadata_map), (val) => __transfer_single_common(nft_id_old, nft_id_new, Pair.fst(val), new_expiration_height))
-
-    /// @notice transfers a single AENS name to another NFT by requiring explicit authorization of the recipient via delegation signature. can be used if can_receive_from_others is false
-    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
-    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
-    /// @param name the AENS name to transfer
-    /// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_new
-    stateful entrypoint transfer_single_authorized(nft_id_old: int, nft_id_new: int, name: string, delegation_sig: signature) =
-        require_authorized(nft_id_old)
-        require_not_expired(nft_id_old)
-        let target_owner = require_exists(nft_id_new)
-        let new_expiration_height = require_not_expired(nft_id_new)
-        __transfer_single_authorized(nft_id_old, nft_id_new, name, new_expiration_height, target_owner, delegation_sig)
-
-    /// @notice transfers multiple AENS names to another NFT by requiring explicit authorization of the recipient via delegation signatures. can be used if can_receive_from_others is false
-    /// @param nft_id_old the id of the NFT that currently wraps the AENS name
-    /// @param nft_id_new the id of the NFT that will wrap the AENS name in the future
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint transfer_multiple_authorized(nft_id_old: int, nft_id_new: int, names_delegation_sigs: map(string, signature)) =
-        let current_owner = require_authorized(nft_id_old)
-        let target_owner = require_exists(nft_id_new)
-        require_not_expired(nft_id_old)
-        let new_expiration_height = require_not_expired(nft_id_new)
-        List.foreach(Map.to_list(names_delegation_sigs), (val) => __transfer_single_authorized(nft_id_old, nft_id_new, Pair.fst(val), new_expiration_height, target_owner, Pair.snd(val)))
 
     /// @notice transfers the AENS name back to the owner or to another defined recipient, updates metadata
     /// @param nft_id the id of the NFT that currently wraps the AENS name
@@ -558,6 +543,9 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
 
     // internal helper functions
 
+    function require_name_limit_not_exceeded(current_wrap_count: int, to_wrap: int) =
+        require(current_wrap_count + to_wrap =< state.name_limit, "NAME_LIMIT_EXCEEDED")
+
     function require_burnable_if_expired_or_empty(nft_id: int, owner: address) =
         switch(get_nft_config(nft_id, owner))
             None => () // allow burning if no config is set
@@ -613,11 +601,6 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
     stateful function __extend(nft_id: int, name: string, new_expiration_height: int) =
         AENS.update(Contract.address, name, Some(FixedTTL(new_expiration_height)), None, None)
         Chain.event(NameExtend(name, nft_id, new_expiration_height, Call.caller))
-
-    stateful function __transfer_single_authorized(nft_id_old: int, nft_id_new: int, name: string, new_expiration_height: int, owner_target_nft: address, delegation_sig: signature) =
-        AENS.transfer(Contract.address, owner_target_nft, name)
-        AENS.transfer(owner_target_nft, Contract.address, name, signature = delegation_sig)
-        __transfer_single_common(nft_id_old, nft_id_new, name, new_expiration_height)
 
     stateful function __transfer_single_common(nft_id_old: int, nft_id_new: int, name: string, new_expiration_height: int) =
         require_name_wrapped(nft_id_old, name)
@@ -692,6 +675,10 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
             , token_to_config = Map.delete(token_id, state.token_to_config)
             , metadata = Map.delete(token_id, state.metadata) })
         Chain.event(Burn(owner, token_id))
+
+    function get_wrap_count(token_id: int) =
+        let Some(MetadataMap(nft_metadata_map)) = Map.lookup(token_id, state.metadata)
+        Map.size(nft_metadata_map)
 
     function get_possible_reward(owner: address, owner_cfg : config, expiration_height: int) : int =
         let delta = expiration_height - Chain.block_height
