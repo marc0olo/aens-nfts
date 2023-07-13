@@ -21,34 +21,110 @@ describe('AENSWrapping', () => {
   let nftReceiverContractId;
   let nftReceiverContractAddress;
 
-  const aensNames = [
+  const aensNamesUnsorted = [
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.chain",
     "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.chain",
     "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC.chain",
-    // "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
-    // "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
-    // "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
-    // "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
-    // "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
-    // "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
-    // "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
-    // "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
-    // "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
-    // "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
-    // "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
-    // "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
-    // "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
-    // "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
-    // "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
-    // "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
-    // "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
-    // "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
-    // "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
-    // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
-    // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
-    // "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
-    // "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
+    "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
+    "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
+    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
+    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
+    "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
+    "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
+    "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
+    "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
+    "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
+    "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
+    "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
+    "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
+    "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1.chain",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB1.chain",
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC1.chain",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1.chain",
+    "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE1.chain",
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1.chain",
+    "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG1.chain",
+    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH1.chain",
+    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII1.chain",
+    "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ1.chain",
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK1.chain",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL1.chain",
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM1.chain",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN1.chain",
+    "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO1.chain",
+    "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1.chain",
+    "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ1.chain",
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR1.chain",
+    "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS1.chain",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1.chain",
+    "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU1.chain",
+    "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1.chain",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW1.chain",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1.chain",
+    "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY1.chain",
+    "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1.chain",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2.chain",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2.chain",
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2.chain",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2.chain",
+    "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE2.chain",
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2.chain",
+    "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG2.chain",
+    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH2.chain",
+    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII2.chain",
+    "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ2.chain",
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK2.chain",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL2.chain",
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM2.chain",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN2.chain",
+    "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO2.chain",
+    "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2.chain",
+    "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ2.chain",
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR2.chain",
+    "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2.chain",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT2.chain",
+    "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2.chain",
+    "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV2.chain",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW2.chain",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2.chain",
+    "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY2.chain",
+    "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ2.chain",
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3.chain",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB3.chain",
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC3.chain",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3.chain",
+    "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3.chain",
+    "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3.chain",
+    "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG3.chain",
+    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH3.chain",
+    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII3.chain",
+    "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ3.chain",
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK3.chain",
+    "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL3.chain",
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM3.chain",
+    "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN3.chain",
+    "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO3.chain",
+    "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3.chain",
+    "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ3.chain",
+    "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR3.chain",
+    "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS3.chain",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT3.chain",
+    "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU3.chain",
+    "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV3.chain"
   ];
+
+  const aensNames = aensNamesUnsorted.sort();
 
   const oneAe = 1_000_000_000_000_000_000n;
 
@@ -61,8 +137,10 @@ describe('AENSWrapping', () => {
     burnable_if_expired_or_empty: false
   }
 
+  let namesDelegationSigs;
+
   before(async () => {
-    aeSdk = await utils.getSdk();
+    aeSdk = utils.getSdk();
 
     // initialize the contract instance
     contract = await aeSdk.initializeContract({
@@ -88,6 +166,13 @@ describe('AENSWrapping', () => {
     nftReceiverContractId = nftReceiverContract.$options.address;
     nftReceiverContractAddress = nftReceiverContractId.replace("ct_", "ak_");
 
+    // claim AENS names if needed
+    if(await isClaimNeeded(aensNames)) {
+      await claimNames(aensNames);
+    }    
+    // create delegation signature map for all names
+    namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+
     // create a snapshot of the blockchain state
     await utils.createSnapshot(aeSdk);
   });
@@ -96,6 +181,17 @@ describe('AENSWrapping', () => {
   afterEach(async () => {
     await utils.rollbackSnapshot(aeSdk);
   });
+
+  async function isClaimNeeded(names) {
+    if(names.length > 0 ){
+      try {
+        await aeSdk.aensQuery(names[0]);
+      } catch(e) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   async function claimNames(names) {
     for (const name of names) {
@@ -165,9 +261,6 @@ describe('AENSWrapping', () => {
     describe('Happy paths', () => {
 
       it('wrap_and_mint', async () => {
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
-  
         await expectNameAttributesProtocol(aensNames, {owner: aeSdk.selectedAddress});
         await expectNameOwnerContract(aensNames, undefined);
         await expectNameNftId(aensNames, undefined);
@@ -208,10 +301,7 @@ describe('AENSWrapping', () => {
       });
   
       it('wrap_single', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
-        await contract.wrap_and_mint(namesDelegationSigs);
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
   
         // claim a new name
         const wrapSingleTestName = "wrapSingleTestName.chain";
@@ -219,25 +309,24 @@ describe('AENSWrapping', () => {
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
   
         // pre-check logic
-        const nftExpirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
+        const nftExpirationHeight = (await contract.get_expiration_by_nft_id(tokenId)).decodedResult;
         const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName])
   
         // check before wrapping
         let nameInstance = await aeSdk.aensQuery(wrapSingleTestName);
-        let metadataMap = (await contract.metadata(1)).decodedResult.MetadataMap[0];
+        let metadataMap = (await contract.metadata(tokenId)).decodedResult.MetadataMap[0];
         assert.equal(nameInstance.owner, aeSdk.selectedAddress);
-        assert.equal(metadataMap.size, aensNames.length);
-        assert.isFalse(metadataMap.has(wrapSingleTestName));
+        assert.equal(metadataMap.size, 0);
         assert.notEqual(nameInstance.ttl, nftExpirationHeight);
   
-        const wrapSingleTx = await contract.wrap_single(1, wrapSingleTestName, delegationSig);
+        const wrapSingleTx = await contract.wrap_single(tokenId, wrapSingleTestName, delegationSig);
         console.log(`Gas used (wrap_single): ${wrapSingleTx.result.gasUsed}`);
   
         // check after wrapping
         nameInstance = await aeSdk.aensQuery(wrapSingleTestName);
-        metadataMap = (await contract.metadata(1)).decodedResult.MetadataMap[0];
+        metadataMap = (await contract.metadata(tokenId)).decodedResult.MetadataMap[0];
         assert.equal(nameInstance.owner, contractAccountAddress);
-        assert.equal(metadataMap.size, aensNames.length + 1);
+        assert.equal(metadataMap.size, 1);
         assert.isTrue(metadataMap.has(wrapSingleTestName));
         assert.equal(nameInstance.ttl, nftExpirationHeight);
       });
@@ -246,10 +335,6 @@ describe('AENSWrapping', () => {
         // mint an empty NFT
         const mintTx = await contract.mint(aeSdk.selectedAddress);
         console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
-  
-        // claim names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
   
         // check before wrapping
         await expectNftMetadataMap(1, new Map());
@@ -265,9 +350,7 @@ describe('AENSWrapping', () => {
       });
   
       it('unwrap_single', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // check after wrapping
@@ -285,9 +368,7 @@ describe('AENSWrapping', () => {
       });
   
       it('unwrap_multiple', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // check after wrapping
@@ -304,9 +385,7 @@ describe('AENSWrapping', () => {
       });
   
       it('unwrap_all', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // check after wrapping
@@ -323,9 +402,7 @@ describe('AENSWrapping', () => {
       });
   
       it('transfer_single', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // prepare: mint an empty NFT on other account
@@ -374,9 +451,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_multiple', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // prepare: mint an empty NFT on other account
@@ -432,9 +507,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_all', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // prepare: mint an empty NFT on other account
@@ -471,9 +544,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_single_authorized', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // prepare: mint an empty NFT on other account
@@ -495,9 +566,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_multiple_authorized', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // prepare: mint an empty NFT on other account
@@ -521,9 +590,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer (NFT)', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
         const otherAccount = utils.getDefaultAccounts()[1];
@@ -555,9 +622,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_multiple_nfts', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         await contract.mint(aeSdk.selectedAddress);
@@ -598,9 +663,7 @@ describe('AENSWrapping', () => {
       });
 
       it('extend_all', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // move 10 blocks into the future
@@ -714,9 +777,7 @@ describe('AENSWrapping', () => {
       });
 
       it('extend_all_for_reward (regular reward)', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // set global config
@@ -768,9 +829,7 @@ describe('AENSWrapping', () => {
       });
 
       it('extend_all_for_reward (emergency reward)', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // set global config
@@ -876,9 +935,7 @@ describe('AENSWrapping', () => {
       });
 
       it('revoke_single', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // pre revocation checks
@@ -908,9 +965,7 @@ describe('AENSWrapping', () => {
       });
 
       it('revoke_multiple', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // pre revocation checks
@@ -944,9 +999,7 @@ describe('AENSWrapping', () => {
       });
 
       it('revoke_all', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // pre revocation checks
@@ -980,9 +1033,7 @@ describe('AENSWrapping', () => {
       });
 
       it('add_or_replace_pointer', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // check before adding pointer
@@ -1017,9 +1068,7 @@ describe('AENSWrapping', () => {
       });
 
       it('add_or_replace_pointers', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // check before adding pointer
@@ -1090,9 +1139,7 @@ describe('AENSWrapping', () => {
       });
 
       it('remove_pointer', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // add pointer
@@ -1117,9 +1164,7 @@ describe('AENSWrapping', () => {
       });
 
       it('remove_pointers & remove_all_pointers', async () => {
-        // prepare: claim and wrap names
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+        // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
         // add pointers
@@ -1222,7 +1267,6 @@ describe('AENSWrapping', () => {
       });
 
       it('wrap_and_mint', async () => {
-        await claimNames(aensNames);
         const namesDelegationWrongSigs = await getDelegationSignatures(aensNames, contractId, otherAccount);
         await expect(
           contract.wrap_and_mint(namesDelegationWrongSigs))
@@ -1254,15 +1298,12 @@ describe('AENSWrapping', () => {
       });
 
       it('add_or_replace_pointer(s)', async () => {
-        const singleNameArray = ["wrapSingleTestName.chain"]
         let tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
-          contract.add_or_replace_pointer(tokenId, singleNameArray[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]}))
+          contract.add_or_replace_pointer(tokenId, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]}))
           .to.be.rejectedWith(`Invocation failed: "NAME_NOT_WRAPPED"`);
 
-        await claimNames(singleNameArray);
-        const namesDelegationSigs = await getDelegationSignatures(singleNameArray, contractId);
         tokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
         const pointers = new Map();
         for(let i=0; i<33; i++) {
@@ -1270,13 +1311,11 @@ describe('AENSWrapping', () => {
         }
 
         await expect(
-          contract.add_or_replace_pointers(tokenId, singleNameArray[0], pointers, false))
+          contract.add_or_replace_pointers(tokenId, aensNames[0], pointers, false))
           .to.be.rejectedWith(`Invocation failed: "POINTER_LIMIT_EXCEEDED"`);
       });
 
       it('transfer_single, transfer_multiple & transfer_all', async () => {
-        await claimNames(aensNames);
-        const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
         const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
 
         await expect(
