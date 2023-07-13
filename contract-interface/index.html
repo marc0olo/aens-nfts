@@ -762,19 +762,6 @@
 <span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_all</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
-<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by requiring explicit authorization of the recipient via delegation signature. can be used if can_receive_from_others is false</span>
-<span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
-<span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
-<span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
-<span class="w">    </span><span class="c1">/// @param delegation_sig the delegation signature for the name provided by the owner of nft_id_new</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_single_authorized</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
-
-<span class="w">    </span><span class="c1">/// @notice transfers multiple AENS names to another NFT by requiring explicit authorization of the recipient via delegation signatures. can be used if can_receive_from_others is false</span>
-<span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
-<span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
-<span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_multiple_authorized</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">map</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">signature</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
-
 <span class="w">    </span><span class="c1">/// @notice transfers the AENS name back to the owner or to another defined recipient, updates metadata</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that currently wraps the AENS name</span>
 <span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
