@@ -684,6 +684,10 @@
 <span class="w">    </span><span class="c1">/// @return the reward pool balance</span>
 <span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
 
+<span class="w">    </span><span class="c1">/// @notice returns the total reward that has been distributed for extending names with this contract</span>
+<span class="w">    </span><span class="c1">/// @return total_reward_distributed</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_total_reward_distributed</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
 <span class="w">    </span><span class="c1">/// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names</span>
 <span class="w">    </span><span class="c1">/// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)</span>
 <span class="w">    </span><span class="c1">/// @return the NFT id</span>
