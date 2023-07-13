@@ -44,6 +44,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , account_to_reward_pool: map(address, int)
         , name_limit: int
         , max_name_ttl: Chain.ttl
+        , total_reward_distributed: int
         , balances: map(address, int)
         , approvals: map(int, address)
         , operators: map(address, map(address, bool))
@@ -85,6 +86,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           account_to_reward_pool = {},
           name_limit = 100,
           max_name_ttl = RelativeTTL(180_000),
+          total_reward_distributed = 0,
           balances = {},
           approvals = {},
           operators = {},
@@ -234,6 +236,11 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @return the reward pool balance
     entrypoint get_reward_pool(account: address) : int =
         state.account_to_reward_pool[account = 0]
+
+    /// @notice returns the total reward that has been distributed for extending names with this contract
+    /// @return total_reward_distributed
+    entrypoint get_total_reward_distributed() : int =
+        state.total_reward_distributed
 
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
@@ -500,6 +507,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         List.foreach(Map.to_list(nft_metadata_map), (val) => __extend(nft_id, Pair.fst(val), new_expiration_height))
         put(state{ token_to_name_expiration[nft_id] @name_expiration = FixedTTL(new_expiration_height) })
         put(state{ account_to_reward_pool[owner = 0] @reward_pool = reward_pool - reward })
+        put(state{ total_reward_distributed = state.total_reward_distributed + reward })
         Chain.spend(Call.caller, reward)
         Chain.event(Reward(nft_id, Call.caller, reward))
 

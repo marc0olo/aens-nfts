@@ -66,6 +66,10 @@ contract interface IAENSWrapping =
     /// @return the reward pool balance
     entrypoint get_reward_pool : (address) => int
 
+    /// @notice returns the total reward that has been distributed for extending names with this contract
+    /// @return total_reward_distributed
+    entrypoint get_total_reward_distributed : () => int
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
     /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
     /// @return the NFT id

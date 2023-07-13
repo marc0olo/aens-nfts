@@ -11,6 +11,8 @@ if(!process.env.SECRET_KEY_DEPLOYER) {
     shutdown('SECRET_KEY_DEPLOYER');
 }
 
+const compilerUrl = process.env.COMPILER_URL ? process.env.COMPILER_URL : 'http://localhost:3080';
+
 // run 'generateBytecodeAndAci.js' first
 const aci = require('../generated_artifacts/aci.json');
 const bytecode = fs.readFileSync('../generated_artifacts/bytecode', 'utf8');
@@ -28,7 +30,7 @@ const SETTINGS = {
 const main = async () => {
     const node = new Node(SETTINGS[AE_NETWORK].nodeUrl);
     const aeSdk = new AeSdk({
-        onCompiler: new CompilerHttp('https://v7.compiler.aeternity.io'),
+        onCompiler: new CompilerHttp(compilerUrl),
         nodes: [
           { name: AE_NETWORK, instance: node },
         ],

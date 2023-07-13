@@ -775,6 +775,9 @@ describe('AENSWrapping', () => {
 
         assert.equal(newBalance, oldBalance + globalConfig.reward - totalCosts);
 
+        const totalRewardDistributed = (await contract.get_total_reward_distributed()).decodedResult;
+        assert.equal(totalRewardDistributed, globalConfig.reward);
+
         // check Reward event
         assert.equal(extendAllForRewardTx.decodedEvents[0].name, 'Reward');
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[0], 1);
