@@ -1,9 +1,6 @@
 require('dotenv').config({ path: '.env.local' });
 const { AeSdk, CompilerHttp, MemoryAccount, Node } = require('@aeternity/aepp-sdk');
 
-// https://github.com/GoogleChromeLabs/jsbi/issues/30#issuecomment-953187833
-BigInt.prototype.toJSON = function() { return this.toString() }
-
 const shutdown = (varName) => {
     console.error(`Missing ENV variable: ${varName}`);
     process.exit(1);
@@ -17,13 +14,20 @@ if(!process.env.CONTRACT_ID) {
     shutdown('CONTRACT_ID');
 }
 
+if(!process.env.NFT_ID) {
+    shutdown('NFT_ID');
+}
+
 if(!process.env.AENS_NAME) {
     shutdown('AENS_NAME');
 }
 
 const compilerUrl = process.env.COMPILER_URL ? process.env.COMPILER_URL : 'http://localhost:3080';
 const contractId = process.env.CONTRACT_ID;
+
+const nftId = process.env.NFT_ID;
 const aensName = process.env.AENS_NAME;
+const recipientAddress = process.env.NAME_RECIPIENT ? process.env.NAME_RECIPIENT : undefined;
 
 // run 'generateBytecodeAndAci.js' first
 const aci = require('../generated_artifacts/aci.json');
@@ -48,19 +52,8 @@ const main = async () => {
         accounts: [new MemoryAccount(process.env.SECRET_KEY_ACCOUNT_1)],
     });
 
-    // make sure to have enough AE balance to cover the name fee
-    const preClaimTx = await aeSdk.aensPreclaim(aensName);
-    // note: there will be a "timeout" until a new keyblock is mined before the actual NameClaimTx can be mined
-    await aeSdk.aensClaim(aensName, preClaimTx.salt);
-
     const contract = await aeSdk.initializeContract({ aci, address: contractId });
-    const delegationSignature = await aeSdk.createDelegationSignature(contractId, [aensName]);
-    const namesDelegationSigs = new Map([[aensName, delegationSignature]]);
-    
-    const nftId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
-    const nftData = (await contract.get_nft_data(nftId)).decodedResult;
-    console.log(`NFT ID: ${nftId}`);
-    console.log(`NFT data: ${JSON.stringify(nftData)}`);
+    await contract.unwrap_single(nftId, aensName, recipientAddress);
 }
 
 main();
