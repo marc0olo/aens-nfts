@@ -1184,6 +1184,14 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
       });
 
+      it('transfer_to_contract', async () => {
+        const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await expect(
+          contract.transfer_to_contract(tokenId))
+          .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_A_CONTRACT"`);
+      });
+
       it('burn', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
@@ -1310,6 +1318,25 @@ describe('AENSWrapping', () => {
 
         // passes because sourceTokenId has names wrapped and firstTargetNft can still receive
         await contract.transfer_all(sourceTokenId, firstTargetNftId, aensNames.slice(1));
+      });
+
+      it('deposit_to_reward_pool', async () => {
+        await expect(
+          contract.deposit_to_reward_pool())
+          .to.be.rejectedWith(`Invocation failed: "DEPOSIT_VALUE_MISSING"`);
+      });
+
+      it('withdraw_from_reward_pool', async () => {
+        await expect(
+          contract.withdraw_from_reward_pool())
+          .to.be.rejectedWith(`Invocation failed: "NO_AE_IN_REWARD_POOL"`);
+        
+        // deposit
+        await contract.deposit_to_reward_pool({ amount: oneAe });
+
+        await expect(
+          contract.withdraw_from_reward_pool(oneAe + 1n))
+          .to.be.rejectedWith(`Invocation failed: "INSUFFICIENT_BALANCE_IN_POOL"`);
       });
     });
 
