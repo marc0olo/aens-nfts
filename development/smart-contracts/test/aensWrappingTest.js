@@ -147,7 +147,7 @@ describe('AENSWrapping', () => {
       sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
       fileSystem: utils.getFilesystem(AENS_WRAPPING_SOURCE)
     });
-    await contract.$deploy([]);
+    await contract.init("Wrapped AENS", "WAENS", 180_000, 100);
     contractId = contract.$options.address;
     contractAccountAddress = contractId.replace("ct_", "ak_");
 
@@ -1232,12 +1232,11 @@ describe('AENSWrapping', () => {
 
       it('wrap_single', async () => {
         // workaround due to https://github.com/aeternity/aeproject/issues/470
-        const AENS_WRAPPING_CUSTOM_TTL_SOURCE = './contracts/test/AENSWrappingCustomTTL.aes';
         const contractLowTtl = await aeSdk.initializeContract({
-          sourceCode: utils.getContractContent(AENS_WRAPPING_CUSTOM_TTL_SOURCE),
-          fileSystem: utils.getFilesystem(AENS_WRAPPING_CUSTOM_TTL_SOURCE)
+          sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
+          fileSystem: utils.getFilesystem(AENS_WRAPPING_SOURCE)
         });
-        await contractLowTtl.init(21);
+        await contractLowTtl.init("Wrapped AENS Low TTL", "WAENSLTTL", 21, 100);
 
         const tokenId = (await contractLowTtl.mint(aeSdk.selectedAddress)).decodedResult;
 

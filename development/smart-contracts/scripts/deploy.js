@@ -37,7 +37,7 @@ const main = async () => {
         accounts: [new MemoryAccount(process.env.SECRET_KEY_DEPLOYER)],
     });
     const contract = await aeSdk.initializeContract({ aci, bytecode });
-    await contract.init();
+    await contract.init("Wrapped AENS", "WAENS", 180_000, 100);
     console.log(`Deployed at: ${contract.$options.address}`);
 }
 

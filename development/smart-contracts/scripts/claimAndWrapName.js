@@ -44,7 +44,7 @@ const main = async () => {
     });
 
     // replace if needed, make sure to have enough AE balance to cover the name fee
-    const name = 'TheVeryFirstWrappedName.chain';
+    const name = 'WrappingNamesIsFunAnd1337.chain';
     const preClaimTx = await aeSdk.aensPreclaim(name);
     // note: there will be a "timeout" until a new keyblock is mined before the actual NameClaimTx can be mined
     await aeSdk.aensClaim(name, preClaimTx.salt);
