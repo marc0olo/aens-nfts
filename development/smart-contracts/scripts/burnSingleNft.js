@@ -18,9 +18,7 @@ if(!process.env.NFT_ID) {
     shutdown('NFT_ID');
 }
 
-const compilerUrl = process.env.COMPILER_URL ? process.env.COMPILER_URL : 'http://localhost:3080';
 const contractId = process.env.CONTRACT_ID;
-
 const nftId = process.env.NFT_ID;
 
 // run 'generateBytecodeAndAci.js' first
@@ -39,7 +37,6 @@ const SETTINGS = {
 const main = async () => {
     const node = new Node(SETTINGS[AE_NETWORK].nodeUrl);
     const aeSdk = new AeSdk({
-        onCompiler: new CompilerHttp(compilerUrl),
         nodes: [
           { name: AE_NETWORK, instance: node },
         ],

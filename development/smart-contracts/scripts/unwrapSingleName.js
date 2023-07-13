@@ -22,9 +22,7 @@ if(!process.env.AENS_NAME) {
     shutdown('AENS_NAME');
 }
 
-const compilerUrl = process.env.COMPILER_URL ? process.env.COMPILER_URL : 'http://localhost:3080';
 const contractId = process.env.CONTRACT_ID;
-
 const nftId = process.env.NFT_ID;
 const aensName = process.env.AENS_NAME;
 const recipientAddress = process.env.NAME_RECIPIENT ? process.env.NAME_RECIPIENT : undefined;
@@ -45,7 +43,6 @@ const SETTINGS = {
 const main = async () => {
     const node = new Node(SETTINGS[AE_NETWORK].nodeUrl);
     const aeSdk = new AeSdk({
-        onCompiler: new CompilerHttp(compilerUrl),
         nodes: [
           { name: AE_NETWORK, instance: node },
         ],

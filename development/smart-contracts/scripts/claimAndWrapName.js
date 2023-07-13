@@ -21,7 +21,6 @@ if(!process.env.AENS_NAME) {
     shutdown('AENS_NAME');
 }
 
-const compilerUrl = process.env.COMPILER_URL ? process.env.COMPILER_URL : 'http://localhost:3080';
 const contractId = process.env.CONTRACT_ID;
 const aensName = process.env.AENS_NAME;
 
@@ -41,7 +40,6 @@ const SETTINGS = {
 const main = async () => {
     const node = new Node(SETTINGS[AE_NETWORK].nodeUrl);
     const aeSdk = new AeSdk({
-        onCompiler: new CompilerHttp(compilerUrl),
         nodes: [
           { name: AE_NETWORK, instance: node },
         ],
@@ -57,9 +55,11 @@ const main = async () => {
     const delegationSignature = await aeSdk.createDelegationSignature(contractId, [aensName]);
     const namesDelegationSigs = new Map([[aensName, delegationSignature]]);
     
-    const nftId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+    const wrapAndMintTx = await contract.wrap_and_mint(namesDelegationSigs);
+    const nftId = wrapAndMintTx.decodedResult;
     const nftData = (await contract.get_nft_data(nftId)).decodedResult;
-    console.log(`NFT ID: ${nftId}`);
+    console.log(`TX hash: ${wrapAndMintTx.txData.hash}`);
+    console.log(`NFT ID: ${wrapAndMintTx.decodedResult}`);
     console.log(`NFT data: ${JSON.stringify(nftData)}`);
 }
 
