@@ -121,7 +121,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             , balances[to = 0] @balance2 = balance2 + 1
             , token_to_owner[token_id] = to
             , owner_to_tokens[from] @from_tokens = Set.delete(token_id, from_tokens)
-            , owner_to_tokens[to = Set.new()] @to_tokens = Set.insert(token_id, to_tokens) })
+            , owner_to_tokens[to = Set.new()] @to_tokens = Set.insert(token_id, to_tokens)
+            , token_to_config @token_config = Map.delete(token_id, token_config) })
         Chain.event(Transfer(from, to, token_id))
 
     stateful entrypoint approve(approved: address, token_id: int, enabled: bool) =
