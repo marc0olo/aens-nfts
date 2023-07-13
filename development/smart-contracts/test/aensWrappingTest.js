@@ -1334,6 +1334,25 @@ describe('AENSWrapping', () => {
           contract.withdraw_from_reward_pool(oneAe + 1n))
           .to.be.rejectedWith(`Invocation failed: "INSUFFICIENT_BALANCE_IN_POOL"`);
       });
+
+      it('name wrapping & name transfer', async () => {
+        const wrapSingleTestName = "wrapSingleTestName.chain";
+        const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
+        await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
+
+        const namesDelegationSigsExceeded = await getDelegationSignatures(aensNames.concat([wrapSingleTestName]), contractId);
+
+        await expect(
+          contract.wrap_and_mint(namesDelegationSigsExceeded))
+          .to.be.rejectedWith(`Invocation failed: "NAME_LIMIT_EXCEEDED"`);
+
+        const recipientTokenId = (await contract.wrap_and_mint(await getDelegationSignatures([wrapSingleTestName], contractId))).decodedResult;
+        const senderTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+
+        await expect(
+          contract.transfer_all(senderTokenId, recipientTokenId))
+          .to.be.rejectedWith(`Invocation failed: "NAME_LIMIT_EXCEEDED"`);
+      });
     });
 
     describe('NFT Receiver', () => {
