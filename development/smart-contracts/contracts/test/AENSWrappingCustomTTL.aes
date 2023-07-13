@@ -30,7 +30,7 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
         , emergency_reward: int
         , emergency_reward_block_window: int
         , can_receive_from_others: bool
-        , burnable_if_empty: bool }
+        , burnable_if_expired_or_empty: bool }
 
     record state =
         { owner: address
@@ -557,6 +557,11 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
 
     // internal helper functions
 
+    function require_burnable_if_expired_or_empty(nft_id: int, owner: address) =
+        switch(get_nft_config(nft_id, owner))
+            None => () // allow burning if no config is set
+            Some(cfg) => require(cfg.burnable_if_expired_or_empty, "BURNING_NOT_ALLOWED")
+
     function require_matching_pointer_limit(pointers: map(string, AENS.pointee)) =
         require(Map.size(pointers) =< 32, "POINTER_LIMIT_EXCEEDED")
 
@@ -674,8 +679,9 @@ main contract AENSWrappingCustomTTL : IAEX141, IAENSWrapping =
             put(state{ approvals = Map.delete(token_id, state.approvals) })
 
     stateful function __burn_single(token_id: int) =
-        let owner = require_authorized(token_id)
+        let owner = require_exists(token_id)
         require_expired_if_wrapped(token_id)
+        require_burnable_if_expired_or_empty(token_id, owner)
         __remove_approval(token_id)
         put(state{ balances[owner] @balance = balance - 1
             , total_supply = state.total_supply - 1

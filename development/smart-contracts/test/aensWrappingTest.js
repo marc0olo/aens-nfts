@@ -58,7 +58,7 @@ describe('AENSWrapping', () => {
     emergency_reward: 1_000_000n,
     emergency_reward_block_window: 179_900n,
     can_receive_from_others: true,
-    burnable_if_empty: false
+    burnable_if_expired_or_empty: false
   }
 
   before(async () => {
@@ -657,7 +657,7 @@ describe('AENSWrapping', () => {
           emergency_reward: 1_000n,
           emergency_reward_block_window: 1n,
           can_receive_from_others: true,
-          burnable_if_empty: true
+          burnable_if_expired_or_empty: true
         }
         await contract.set_nft_config(1, nftConfig);
 
@@ -1191,10 +1191,6 @@ describe('AENSWrapping', () => {
           contract.burn(tokenId + 1n))
           .to.be.rejectedWith(`Invocation failed: "TOKEN_NOT_EXISTS"`);
 
-        await expect(
-          contract.burn(tokenId, { onAccount: otherAccount }))
-          .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
-
         const wrapSingleTestName = "wrapSingleTestName.chain";
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
@@ -1204,6 +1200,17 @@ describe('AENSWrapping', () => {
         await expect(
           contract.burn(tokenId))
           .to.be.rejectedWith(`Invocation failed: "WRAPPED_NAMES_NOT_EXPIRED"`);
+
+        // set global config to disallow burning of empty NFTs
+        await contract.set_global_config(globalConfig);
+        const tokenIdToBurn = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+        await expect(
+          contract.burn(tokenIdToBurn))
+          .to.be.rejectedWith(`Invocation failed: "BURNING_NOT_ALLOWED"`);
+        
+        // passes after removing global config even if executed from other account
+        await contract.remove_global_config();
+        await contract.burn(tokenIdToBurn, { onAccount: otherAccount });
       });
 
       it('wrap_and_mint', async () => {
@@ -1259,7 +1266,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "POINTER_LIMIT_EXCEEDED"`);
       });
 
-      it('transfer_single & transfer_multiple', async () => {
+      it('transfer_single, transfer_multiple & transfer_all', async () => {
         await claimNames(aensNames);
         const namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
         const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
@@ -1285,18 +1292,24 @@ describe('AENSWrapping', () => {
           emergency_reward: 1_000n,
           emergency_reward_block_window: 1n,
           can_receive_from_others: false,
-          burnable_if_empty: false
+          burnable_if_expired_or_empty: false
         }
         // mint second target nft and set nft config to disallow receiving names and overrule global cfg
-        const secondTargetNftId = (await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount })).decodedResult;        
+        const secondTargetNftId = (await contract.mint(otherAccount.address, undefined, undefined, { onAccount: otherAccount })).decodedResult;
         await contract.set_nft_config(secondTargetNftId, nftConfig, { onAccount: otherAccount });
 
         await expect(
           contract.transfer_multiple(sourceTokenId, secondTargetNftId, aensNames.slice(1)))
           .to.be.rejectedWith(`Invocation failed: "RECEIVING_NAME_NOT_ALLOWED"`);
 
-        // passes because firstTargetNft can still receive
-        await contract.transfer_multiple(sourceTokenId, firstTargetNftId, aensNames.slice(1));
+        const emptySourceNftId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
+
+        await expect(
+          contract.transfer_all(emptySourceNftId, firstTargetNftId, aensNames.slice(1)))
+          .to.be.rejectedWith(`Invocation failed: "NO_NAMES_WRAPPED"`);
+
+        // passes because sourceTokenId has names wrapped and firstTargetNft can still receive
+        await contract.transfer_all(sourceTokenId, firstTargetNftId, aensNames.slice(1));
       });
     });
 
