@@ -1,6 +1,6 @@
 <template>
     <div id="container">
-        <img alt="Aeternity" src="./assets/logo.svg" style="width: 250px" />
+        <img alt="Aeternity" src="./assets/logo.svg" style="width: 100px" />
         <h1>AENS Wrapping into AEX-141 NFTs</h1>
         <div id="nav">
             <router-link to="/">Home</router-link> |
