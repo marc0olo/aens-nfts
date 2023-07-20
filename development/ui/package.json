@@ -5,7 +5,9 @@
     "serve": "npm run serve:testnet",
     "serve:testnet": "vue-cli-service serve --mode development",
     "serve:mainnet": "vue-cli-service serve --mode production",
-    "build": "vue-cli-service build",
+    "build": "npm run build:testnet",
+    "build:testnet": "vue-cli-service build --mode development",
+    "build:mainnet": "vue-cli-service build --mode production",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e --headless --mode e2e",
     "lint": "vue-cli-service lint"
