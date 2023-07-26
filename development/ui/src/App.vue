@@ -4,7 +4,9 @@
         <h1>AENS Wrapping into AEX-141 NFTs</h1>
         <div id="nav">
             <router-link to="/">Home</router-link> |
-            <router-link to="/contract-interaction">Contract Interaction</router-link>
+            <router-link to="/contract-interaction">Contract Interaction</router-link> |
+            <router-link to="/wrap-names">Wrap AENS names</router-link> |
+            <router-link to="/my-nfts">My NFTs</router-link>
         </div>
     </div>
 

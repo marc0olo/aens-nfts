@@ -1,6 +1,5 @@
 <template>
     <div class="contract">
-        <h2>Contract Interaction</h2>
         <div class="details">
             <span>
               <strong>Contract ID: </strong>
@@ -174,7 +173,8 @@
   async function getOwnedNfts() {
     ownedNfts.value = 'loading...'
     try {
-      ownedNfts.value = (await state.contract.get_owned_tokens(state.aeSdk.address)).decodedResult
+      const result = (await state.contract.get_owned_tokens(state.aeSdk.address)).decodedResult
+      ownedNfts.value = toString(result)
     } catch (error) {
       ownedNfts.value = 'error loading'
       throw error

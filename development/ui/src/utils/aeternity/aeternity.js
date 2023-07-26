@@ -17,6 +17,7 @@ export const state = reactive({
   status: 'connecting',
   networkId: process.env.VUE_APP_NETWORK_ID,
   aeScanUrl: process.env.VUE_APP_AESCAN_URL,
+  nodeUrl: process.env.VUE_APP_NODE_URL,
   contractId: 'not initialized yet',
   contract: null
 })

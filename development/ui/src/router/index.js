@@ -9,11 +9,35 @@ const routes = [
   },
   {
     path: '/contract-interaction',
-    name: 'Contract Interaction',
+    name: 'ContractInteraction',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/ContractInteractionView.vue')
+  },
+  {
+    path: '/wrap-names',
+    name: 'WrapNames',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/WrapNamesView.vue')
+  },
+  {
+    path: '/my-nfts',
+    name: 'MyNfts',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/MyNfts.vue')
+  },
+  {
+    path: '/nft/:id',
+    name: 'NftDetails',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/NftDetails.vue')
   }
 ]
 
