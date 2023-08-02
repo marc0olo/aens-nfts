@@ -21,9 +21,6 @@
     <div v-else-if="!isWaiting">
       You don't own an NFT.
     </div>
-    <div>
-      <NftDetails />
-    </div>
     <p v-if="txExecuting">Waiting for tx to be mined ...</p>
     <p v-if="txHash">
       Transaction mined:

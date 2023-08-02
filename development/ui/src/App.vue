@@ -6,7 +6,8 @@
             <router-link to="/">Home</router-link> |
             <router-link to="/contract-interaction">Contract Interaction</router-link> |
             <router-link to="/wrap-names">Wrap AENS names</router-link> |
-            <router-link to="/my-nfts">My NFTs</router-link>
+            <router-link to="/my-nfts">My NFTs</router-link> |
+            <router-link to="/my-config">My Config</router-link>
         </div>
     </div>
 

@@ -1,5 +1,5 @@
 require('dotenv').config({ path: '.env.local' });
-const { AeSdk, CompilerHttp, MemoryAccount, Node } = require('@aeternity/aepp-sdk');
+const { AeSdk, MemoryAccount, Node } = require('@aeternity/aepp-sdk');
 
 // https://github.com/GoogleChromeLabs/jsbi/issues/30#issuecomment-953187833
 BigInt.prototype.toJSON = function() { return this.toString() }

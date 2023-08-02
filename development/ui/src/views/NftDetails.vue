@@ -8,6 +8,9 @@
         <ul>
           <li>Owner: {{ nftData.owner }}</li>
           <li>Expiration height: {{ nftData.expiration_height }}</li>
+          <ul>
+            <li>{{ nftData.expiration_height - BigInt(currentHeight) }} keyblocks left</li>
+          </ul>
           <li v-if="nftData.names.length > 0">Names:</li>
           <ul v-if="nftData.names.length > 0">
             <li v-for="name in nftData?.names" :key="name">
@@ -15,17 +18,17 @@
             </li>
           </ul>
           <li v-else>Names: n/a</li>
-          <li v-if="nftData.config">Config:</li>
-          <ul v-if="nftData.config">
-            <li>Reward: {{ nftData.config.reward }}</li>
-            <li>Reward block window: {{ nftData.config.reward_block_window }}</li>
-            <li>Emergency reward: {{ nftData.config.emergency_reward }}</li>
-            <li>Emergency reward block window: {{ nftData.config.emergency_reward_block_window }}</li>
-            <li>Can receive from others: {{ nftData.config.can_receive_from_others }}</li>
-            <li>Burnable if expired or empty: {{ nftData.config.burnable_if_expired_or_empty }}</li>
+          <li v-if="nftData.owner_config">Config:</li>
+          <ul v-if="nftData.owner_config">
+            <li>Reward: {{ toAe(nftData.owner_config.reward) }} AE</li>
+            <li>Reward block window: {{ nftData.owner_config.reward_block_window }}</li>
+            <li>Emergency reward: {{ toAe(nftData.owner_config.emergency_reward) }} AE</li>
+            <li>Emergency reward block window: {{ nftData.owner_config.emergency_reward_block_window }}</li>
+            <li>Can receive from others: {{ nftData.owner_config.can_receive_from_others }}</li>
+            <li>Burnable if expired or empty: {{ nftData.owner_config.burnable_if_expired_or_empty }}</li>
           </ul>
           <li v-else>Config: n/a</li>
-          <li>Estimated reward: {{ estimatedReward }}</li>
+          <li>Current reward for extending: {{ toAe(estimatedReward) }} AE</li>
         </ul>
       </div>
     </div>
@@ -42,7 +45,7 @@
         </div>
         <div>
           <span>
-          <strong>Name(s) to unwrap (comma separated): </strong>
+            <strong>Name(s) to unwrap (comma separated): </strong>
             <input v-model="namesToUnwrap" placeholder="xyz.chain" />
           </span>
           <button @click="unwrapSingle()">
@@ -85,24 +88,27 @@
   import { ref } from 'vue';
   import { useRoute } from 'vue-router'
   import { state } from '../utils/aeternity/aeternity'
+import { toAe } from '@aeternity/aepp-sdk';
 
   const route = useRoute();  
   const nftId = route.params.id; // read parameter id (it is reactive)
 
   let isLoading = ref(true)
   let nftData = ref()
+  let currentHeight = ref()
   let estimatedReward = ref()
   let recipient = ref()
   let namesToUnwrap = ref()
   let txExecuting = ref(false)
   let txHash = ref()
 
-  const loadNftData = async () => {
+  const loadData = async () => {
     while(isLoading.value) {
       if(state.status === 'connected') {
         try {
           nftData.value = (await state.contract.get_nft_data(nftId)).decodedResult
           estimatedReward.value = (await state.contract.estimate_reward(nftId)).decodedResult
+          currentHeight.value = await state.aeSdk.getHeight()
         } catch (e) {
           console.error(e)
         }
@@ -213,7 +219,7 @@
     })
   }
 
-  loadNftData()
+  loadData()
 </script>
   
 <style scoped>
