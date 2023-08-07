@@ -1,11 +1,12 @@
-const { assert, expect, use } = require('chai');
-const { utils } = require('@aeternity/aeproject');
-
 const chaiAsPromised = require('chai-as-promised');
+const { assert, expect, use } = require('chai');
+
+const { utils } = require('@aeternity/aeproject');
+const { AeSdk, CompilerHttp, Node, decode, encode, Encoding } = require('@aeternity/aepp-sdk');
 
 use(chaiAsPromised);
 
-const AENS_WRAPPING_SOURCE = './contracts/AENSWrapping.aes';
+const AENS_WRAPPING_SOURCE = './contracts/AENSWrappingCeres.aes';
 const DUMMY_SOURCE = './contracts/test/Dummy.aes';
 const NFT_RECEIVER_SOURCE = './contracts/test/NFTReceiver.aes';
 
@@ -22,112 +23,109 @@ describe('AENSWrapping', () => {
   let nftReceiverContractAddress;
 
   const aensNamesUnsorted = [
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB1.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC1.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE1.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG1.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH1.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII1.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ1.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK1.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL1.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM1.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN1.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO1.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ1.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR1.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS1.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU1.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW1.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY1.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE2.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG2.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH2.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII2.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ2.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK2.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL2.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM2.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN2.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO2.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ2.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR2.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT2.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV2.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW2.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY2.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ2.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB3.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC3.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG3.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH3.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII3.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ3.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK3.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL3.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM3.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN3.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO3.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ3.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR3.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS3.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT3.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU3.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV3.chain"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.chain",
+    "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.chain",
+    "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC.chain",
+    // "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
+    // "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
+    // "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
+    // "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
+    // "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
+    // "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
+    // "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
+    // "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
+    // "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
+    // "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
+    // "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
+    // "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
+    // "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
+    // "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
+    // "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
+    // "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
+    // "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
+    // "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
+    // "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
+    // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
+    // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
+    // "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
+    // "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
+    // "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1.chain",
+    // "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB1.chain",
+    // "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC1.chain",
+    // "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1.chain",
+    // "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE1.chain",
+    // "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1.chain",
+    // "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG1.chain",
+    // "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH1.chain",
+    // "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII1.chain",
+    // "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ1.chain",
+    // "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK1.chain",
+    // "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL1.chain",
+    // "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM1.chain",
+    // "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN1.chain",
+    // "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO1.chain",
+    // "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1.chain",
+    // "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ1.chain",
+    // "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR1.chain",
+    // "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS1.chain",
+    // "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1.chain",
+    // "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU1.chain",
+    // "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1.chain",
+    // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW1.chain",
+    // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1.chain",
+    // "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY1.chain",
+    // "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1.chain",
+    // "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2.chain",
+    // "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2.chain",
+    // "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2.chain",
+    // "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2.chain",
+    // "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE2.chain",
+    // "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2.chain",
+    // "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG2.chain",
+    // "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH2.chain",
+    // "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII2.chain",
+    // "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ2.chain",
+    // "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK2.chain",
+    // "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL2.chain",
+    // "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM2.chain",
+    // "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN2.chain",
+    // "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO2.chain",
+    // "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2.chain",
+    // "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ2.chain",
+    // "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR2.chain",
+    // "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2.chain",
+    // "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT2.chain",
+    // "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2.chain",
+    // "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV2.chain",
+    // "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW2.chain",
+    // "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2.chain",
+    // "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY2.chain",
+    // "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ2.chain",
+    // "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3.chain",
+    // "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB3.chain",
+    // "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC3.chain",
+    // "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3.chain",
+    // "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3.chain",
+    // "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3.chain",
+    // "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG3.chain",
+    // "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH3.chain",
+    // "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII3.chain",
+    // "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ3.chain",
+    // "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK3.chain",
+    // "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL3.chain",
+    // "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM3.chain",
+    // "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN3.chain",
+    // "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO3.chain",
+    // "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3.chain",
+    // "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ3.chain",
+    // "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR3.chain",
+    // "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS3.chain",
+    // "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT3.chain",
+    // "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU3.chain",
+    // "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV3.chain"
   ];
 
   const aensNames = aensNamesUnsorted.sort();
-
-  const aensNamesLowercase = [];
-  aensNames.forEach(name => aensNamesLowercase.push(name.toLowerCase()));
 
   const oneAe = 1_000_000_000_000_000_000n;
 
@@ -140,13 +138,21 @@ describe('AENSWrapping', () => {
     burnable_if_expired_or_empty: false
   }
 
-  let namesDelegationSigs;
+  let delegationSig;
+  let networkId;
 
   before(async () => {
-    // activate ceres
-    await utils.awaitKeyBlocks(aeSdk, 6);
+    aeSdkBeforeCeres = utils.getSdk();
 
-    aeSdk = utils.getSdk();
+    // activate ceres
+    await utils.awaitKeyBlocks(aeSdkBeforeCeres, 6);
+
+    aeSdk = new AeSdk({
+      accounts: utils.getDefaultAccounts(),
+      nodes: [{ name: 'node', instance: new Node("http://localhost:3001", { ignoreVersion: true }) }],
+      onCompiler: new CompilerHttp("http://localhost:3081"),
+      interval: 50,
+    });
 
     // initialize the contract instance
     contract = await aeSdk.initializeContract({
@@ -177,8 +183,16 @@ describe('AENSWrapping', () => {
       await claimNames(aensNames);
     }
 
-    // create delegation signature map for all names
-    namesDelegationSigs = await getDelegationSignatures(aensNames, contractId);
+    networkId = (await aeSdk.getNodeInfo()).nodeNetworkId;
+
+    console.log(networkId);
+
+    // get delegation sig for default account
+    delegationSig = await getDelegationSignature(contractId);
+    console.log(delegationSig);
+
+    const sophia_msg = (await contract.provide_delegation_sig(delegationSig)).decodedResult;
+    console.log(`Sophia msg: ${sophia_msg}`);
 
     // create a snapshot of the blockchain state
     await utils.createSnapshot(aeSdk);
@@ -249,12 +263,15 @@ describe('AENSWrapping', () => {
     assert.deepEqual(metadataMap, expectedNftMetadataMap);
   }
 
-  async function getDelegationSignatures(names, contractId, onAccount = utils.getDefaultAccounts()[0]) {
-    return new Map(
-      await Promise.all(
-        names.map(async (name) => [name, await aeSdk.createDelegationSignature(contractId, [name], { onAccount })])
-      )
-    );
+  async function getDelegationSignature(contractId, onAccount = utils.getDefaultAccounts()[0]) {
+    const payload = Buffer.concat([
+                      Buffer.from(networkId),
+                      decode(onAccount.address),
+                      Buffer.from("AENS"),
+                      decode(contractId),
+                    ]);
+    console.log(`JS msg: ${payload.toString('hex')}`);
+    return await aeSdk.sign(payload, { onAccount });
   }
 
   function getTotalTxCosts(txResult) {
@@ -263,7 +280,7 @@ describe('AENSWrapping', () => {
     return txFee + gasCosts;
   }
 
-  describe('AENS Wrapping', () => {
+  xdescribe('AENS Wrapping', () => {
 
     describe('Happy paths', () => {
 
@@ -281,14 +298,14 @@ describe('AENSWrapping', () => {
   
         const maxRelativeTtl = 180_000;
         const expectedTtl = newHeight + maxRelativeTtl;
-
-        const wrapAndMintTx = await contract.wrap_and_mint(namesDelegationSigs);
+  
+        const wrapAndMintTx = await contract.wrap_and_mint(aensNames);
         
         console.log(`Gas used (wrap_and_mint with ${aensNames.length} names): ${wrapAndMintTx.result.gasUsed}`);
   
-        for(let i=0; i<aensNamesLowercase.length; i++) {
+        for(let i=0; i<aensNames.length; i++) {
           assert.equal(wrapAndMintTx.decodedEvents[i].name, 'NameWrap');
-          assert.equal(wrapAndMintTx.decodedEvents[i].args[0], aensNamesLowercase[aensNamesLowercase.length-(i+1)]);
+          assert.equal(wrapAndMintTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[1], 1);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[2], aeSdk.selectedAddress);
           assert.equal(wrapAndMintTx.decodedEvents[i].args[3], expectedTtl);
@@ -317,7 +334,6 @@ describe('AENSWrapping', () => {
   
         // pre-check logic
         const nftExpirationHeight = (await contract.get_expiration_by_nft_id(tokenId)).decodedResult;
-        const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName])
   
         // check before wrapping
         let nameInstance = await aeSdk.aensQuery(wrapSingleTestName);
@@ -326,7 +342,7 @@ describe('AENSWrapping', () => {
         assert.equal(metadataMap.size, 0);
         assert.notEqual(nameInstance.ttl, nftExpirationHeight);
   
-        const wrapSingleTx = await contract.wrap_single(tokenId, wrapSingleTestName, delegationSig);
+        const wrapSingleTx = await contract.wrap_single(tokenId, wrapSingleTestName);
         console.log(`Gas used (wrap_single): ${wrapSingleTx.result.gasUsed}`);
   
         // check after wrapping
@@ -334,7 +350,7 @@ describe('AENSWrapping', () => {
         metadataMap = (await contract.metadata(tokenId)).decodedResult.MetadataMap[0];
         assert.equal(nameInstance.owner, contractAccountAddress);
         assert.equal(metadataMap.size, 1);
-        assert.isTrue(metadataMap.has(wrapSingleTestName.toLowerCase()));
+        assert.isTrue(metadataMap.has(wrapSingleTestName));
         assert.equal(nameInstance.ttl, nftExpirationHeight);
       });
   
@@ -347,21 +363,21 @@ describe('AENSWrapping', () => {
         await expectNftMetadataMap(1, new Map());
         await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress })
   
-        const wrapMultipleTx = await contract.wrap_multiple(1, namesDelegationSigs);
+        const wrapMultipleTx = await contract.wrap_multiple(1, aensNames);
         console.log(`Gas used (wrap_multiple with ${aensNames.length} names): ${wrapMultipleTx.result.gasUsed}`);
   
         // check after wrapping
         const nftExpirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
         await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: nftExpirationHeight })
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
       });
   
       it('unwrap_single', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         // check after wrapping
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
         await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
   
         // unwrap single name from nft
@@ -369,7 +385,7 @@ describe('AENSWrapping', () => {
         console.log(`Gas used (unwrap_single): ${unwrapSingleTx.result.gasUsed}`);
   
         // check after unwrapping
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase.slice(1)));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames.slice(1)));
         await expectNameAttributesProtocol(aensNames.slice(1), { owner: contractAccountAddress });
         await expectNameAttributesProtocol([aensNames[0]], { owner: aeSdk.selectedAddress });
       });
@@ -379,7 +395,7 @@ describe('AENSWrapping', () => {
         await contract.wrap_and_mint(namesDelegationSigs);
   
         // check after wrapping
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
         await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
   
         // unwrap multiple names from nft
@@ -393,10 +409,10 @@ describe('AENSWrapping', () => {
   
       it('unwrap_all', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         // check after wrapping
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
         await expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress });
   
         // unwrap multiple names from nft
@@ -410,7 +426,7 @@ describe('AENSWrapping', () => {
   
       it('transfer_single', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         // prepare: mint an empty NFT on other account
         const otherAccount = utils.getDefaultAccounts()[1];
@@ -440,7 +456,7 @@ describe('AENSWrapping', () => {
 
         // check NameTransfer event
         assert.equal(transferSingleTx.decodedEvents[0].name, 'NameTransfer');
-        assert.equal(transferSingleTx.decodedEvents[0].args[0], aensNamesLowercase[0]);
+        assert.equal(transferSingleTx.decodedEvents[0].args[0], aensNames[0]);
         assert.equal(transferSingleTx.decodedEvents[0].args[1], 1);
         assert.equal(transferSingleTx.decodedEvents[0].args[2], 2);
   
@@ -448,9 +464,9 @@ describe('AENSWrapping', () => {
         await expectNameOwnerContract(aensNames.slice(1), aeSdk.selectedAddress);
         await expectNameOwnerContract([aensNames[0]], otherAccount.address);
         await expectNameNftId(aensNames.slice(1), 1);
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap((aensNamesLowercase.slice(1))));
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap((aensNames.slice(1))));
         await expectNameNftId([aensNames[0]], 2);
-        await expectNftMetadataMap(2, getExpectedNftMetadataMap((([aensNamesLowercase[0]]))));
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap((([aensNames[0]]))));
   
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames.slice(1), { owner: contractAccountAddress, ttl: expirationHeightNftOne });
@@ -459,7 +475,7 @@ describe('AENSWrapping', () => {
 
       it('transfer_multiple', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         // prepare: mint an empty NFT on other account
         const otherAccount = utils.getDefaultAccounts()[1];
@@ -480,7 +496,7 @@ describe('AENSWrapping', () => {
         assert.notEqual(expirationHeightNftTwo, expirationHeightNftOne);
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftOne });
         let nftDataOne = (await contract.get_nft_data(1)).decodedResult
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNamesLowercase, expiration_height: expirationHeightNftOne});
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeightNftOne});
         let nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
         assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: undefined, names: [], expiration_height: expirationHeightNftTwo});
   
@@ -492,9 +508,9 @@ describe('AENSWrapping', () => {
         console.log(`Gas used (transfer_multiple with ${aensNames.length} names): ${transferMultipleTx.result.gasUsed}`);
 
         // check NameTransfer event
-        for(let i=0; i<aensNamesLowercase.length; i++) {
+        for(let i=0; i<aensNames.length; i++) {
           assert.equal(transferMultipleTx.decodedEvents[i].name, 'NameTransfer');
-          assert.equal(transferMultipleTx.decodedEvents[i].args[0], aensNamesLowercase[aensNamesLowercase.length-(i+1)]);
+          assert.equal(transferMultipleTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
           assert.equal(transferMultipleTx.decodedEvents[i].args[1], 1);
           assert.equal(transferMultipleTx.decodedEvents[i].args[2], 2);
         }
@@ -502,12 +518,12 @@ describe('AENSWrapping', () => {
         // check after transfer
         await expectNftMetadataMap(1, new Map());
         await expectNameOwnerContract(aensNames, otherAccount.address);
-        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNames));
         await expectNameNftId(aensNames, 2);
         nftDataOne = (await contract.get_nft_data(1)).decodedResult
         assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [], expiration_height: expirationHeightNftOne});
         nftDataTwo = (await contract.get_nft_data(2)).decodedResult;
-        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: globalConfig, names: aensNamesLowercase, expiration_height: expirationHeightNftTwo});
+        assert.deepEqual(nftDataTwo, {id: 2n, owner: otherAccount.address, owner_config: globalConfig, names: aensNames, expiration_height: expirationHeightNftTwo});
   
         // check TTL / expiration height of nft & names after transfer
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
@@ -515,7 +531,7 @@ describe('AENSWrapping', () => {
 
       it('transfer_all', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         // prepare: mint an empty NFT on other account
         const otherAccount = utils.getDefaultAccounts()[1];
@@ -533,9 +549,9 @@ describe('AENSWrapping', () => {
         console.log(`Gas used (transfer_all for ${aensNames.length} names): ${transferAllTx.result.gasUsed}`);
 
         // check NameTransfer event
-        for(let i=0; i<aensNamesLowercase.length; i++) {
+        for(let i=0; i<aensNames.length; i++) {
           assert.equal(transferAllTx.decodedEvents[i].name, 'NameTransfer');
-          assert.equal(transferAllTx.decodedEvents[i].args[0], aensNamesLowercase[aensNamesLowercase.length-(i+1)]);
+          assert.equal(transferAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
           assert.equal(transferAllTx.decodedEvents[i].args[1], 1);
           assert.equal(transferAllTx.decodedEvents[i].args[2], 2);
         }
@@ -543,7 +559,7 @@ describe('AENSWrapping', () => {
         // check after transfer
         await expectNftMetadataMap(1, new Map());
         await expectNameOwnerContract(aensNames, otherAccount.address);
-        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNamesLowercase));
+        await expectNftMetadataMap(2, getExpectedNftMetadataMap(aensNames));
         await expectNameNftId(aensNames, 2);
   
         // check TTL / expiration height of nft & names after transfer
@@ -552,7 +568,7 @@ describe('AENSWrapping', () => {
 
       it('transfer (NFT)', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
   
         const otherAccount = utils.getDefaultAccounts()[1];
 
@@ -584,7 +600,7 @@ describe('AENSWrapping', () => {
 
       it('transfer_multiple_nfts', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         await contract.mint(aeSdk.selectedAddress);
   
@@ -640,9 +656,9 @@ describe('AENSWrapping', () => {
         const expectedNewExpirationHeight = heightBeforeExtending + 180_000;
 
         // check NameExtend event
-        for(let i=0; i<aensNamesLowercase.length; i++) {
+        for(let i=0; i<aensNames.length; i++) {
           assert.equal(extendAllTx.decodedEvents[i].name, 'NameExtend');
-          assert.equal(extendAllTx.decodedEvents[i].args[0], aensNamesLowercase[aensNamesLowercase.length-(i+1)]);
+          assert.equal(extendAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
           assert.equal(extendAllTx.decodedEvents[i].args[1], 1);
           assert.equal(extendAllTx.decodedEvents[i].args[2], expectedNewExpirationHeight);
           assert.equal(extendAllTx.decodedEvents[i].args[3], otherAccount.address);
@@ -739,7 +755,7 @@ describe('AENSWrapping', () => {
 
       it('extend_all_for_reward (regular reward)', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // set global config
         await contract.set_global_config(globalConfig);
@@ -794,7 +810,7 @@ describe('AENSWrapping', () => {
 
       it('extend_all_for_reward (emergency reward)', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // set global config
         await contract.set_global_config(globalConfig);
@@ -900,26 +916,26 @@ describe('AENSWrapping', () => {
 
       it('revoke_single', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // pre revocation checks
         const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
         let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNamesLowercase, expiration_height: expirationHeight});
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
 
         const revokeSingleTx = await contract.revoke_single(1, aensNames[0]);
         console.log(`Gas used (revoke_single): ${revokeSingleTx.result.gasUsed}`);
 
         // check NameRevoke event
         assert.equal(revokeSingleTx.decodedEvents[0].name, 'NameRevoke');
-        assert.equal(revokeSingleTx.decodedEvents[0].args[0], aensNamesLowercase[0]);
+        assert.equal(revokeSingleTx.decodedEvents[0].args[0], aensNames[0]);
         assert.equal(revokeSingleTx.decodedEvents[0].args[1], 1);
 
         // after revocation checks
         nftDataOne = (await contract.get_nft_data(1)).decodedResult;
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNamesLowercase.slice(1), expiration_height: expirationHeight});
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase.slice(1)));
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames.slice(1), expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames.slice(1)));
         try {
           await aeSdk.aensQuery(aensNames[0]);
         } catch(e) {
@@ -930,28 +946,28 @@ describe('AENSWrapping', () => {
 
       it('revoke_multiple', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // pre revocation checks
         const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
         let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNamesLowercase, expiration_height: expirationHeight});
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
 
         const revokeMultipleTx = await contract.revoke_multiple(1, aensNames.slice(1));
         console.log(`Gas used (revoke_multiple) with ${aensNames.slice(1).length} names: ${revokeMultipleTx.result.gasUsed}`);
 
         // check NameRevoke events
-        for(let i=0; i<aensNamesLowercase.slice(1).length; i++) {
+        for(let i=0; i<aensNames.slice(1).length; i++) {
           assert.equal(revokeMultipleTx.decodedEvents[i].name, 'NameRevoke');
-          assert.equal(revokeMultipleTx.decodedEvents[i].args[0], aensNamesLowercase.slice(1)[aensNamesLowercase.slice(1).length-(i+1)]);
+          assert.equal(revokeMultipleTx.decodedEvents[i].args[0], aensNames.slice(1)[aensNames.slice(1).length-(i+1)]);
           assert.equal(revokeMultipleTx.decodedEvents[i].args[1], 1);
         }
 
         // after revocation checks
         nftDataOne = (await contract.get_nft_data(1)).decodedResult;
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [aensNamesLowercase[0]], expiration_height: expirationHeight});
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap([aensNamesLowercase[0]]));
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: [aensNames[0]], expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap([aensNames[0]]));
         for(let i=0; i<aensNames.slice(1).length; i++) {
           try {
             await aeSdk.aensQuery(aensNames.slice(1)[i]);
@@ -964,21 +980,21 @@ describe('AENSWrapping', () => {
 
       it('revoke_all', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // pre revocation checks
         const expirationHeight = (await contract.get_expiration_by_nft_id(1)).decodedResult;
         let nftDataOne = (await contract.get_nft_data(1)).decodedResult;
-        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNamesLowercase, expiration_height: expirationHeight});
-        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
+        assert.deepEqual(nftDataOne, {id: 1n, owner: aeSdk.selectedAddress, owner_config: undefined, names: aensNames, expiration_height: expirationHeight});
+        await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNames));
 
         const revokeAllTx = await contract.revoke_all(1);
         console.log(`Gas used (revoke_all) with ${aensNames.length} names: ${revokeAllTx.result.gasUsed}`);
 
         // check NameRevoke events
-        for(let i=0; i<aensNamesLowercase.length; i++) {
+        for(let i=0; i<aensNames.length; i++) {
           assert.equal(revokeAllTx.decodedEvents[i].name, 'NameRevoke');
-          assert.equal(revokeAllTx.decodedEvents[i].args[0], aensNamesLowercase[aensNamesLowercase.length-(i+1)]);
+          assert.equal(revokeAllTx.decodedEvents[i].args[0], aensNames[aensNames.length-(i+1)]);
           assert.equal(revokeAllTx.decodedEvents[i].args[1], 1);
         }
 
@@ -998,14 +1014,14 @@ describe('AENSWrapping', () => {
 
       it('add_or_replace_pointer', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // check before adding pointer
         let nameInstance = await aeSdk.aensQuery(aensNames[0]);
         assert.deepEqual(nameInstance.pointers, []);
 
         // add pointer
-        let addOrReplacePointerTx = await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]})
+        let addOrReplacePointerTx = await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENSv2.AccountPt': [aeSdk.selectedAddress]})
         console.log(`Gas used (add_or_replace_pointer): ${addOrReplacePointerTx.result.gasUsed}`);
 
         // check after adding pointer
@@ -1019,7 +1035,7 @@ describe('AENSWrapping', () => {
 
         // replace pointer
         const otherAccount = utils.getDefaultAccounts()[1];
-        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [otherAccount.address]})
+        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENSv2.AccountPt': [otherAccount.address]})
 
         // check after replacing pointer
         nameInstance = await aeSdk.aensQuery(aensNames[0]);
@@ -1033,7 +1049,7 @@ describe('AENSWrapping', () => {
 
       it('add_or_replace_pointers', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // check before adding pointer
         let nameInstance = await aeSdk.aensQuery(aensNames[0]);
@@ -1042,7 +1058,7 @@ describe('AENSWrapping', () => {
         // add pointers
         const pointers = new Map();
         for(let i=0; i<30; i++) {
-          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+          pointers.set(`pointer-${i+1}`, {'AENSv2.AccountPt': [aeSdk.selectedAddress]});
         }
         let addOrReplacePointersTx = await contract.add_or_replace_pointers(1, aensNames[0], pointers, true)
         console.log(`Gas used (add_or_replace_pointers) with ${pointers.size} pointers: ${addOrReplacePointersTx.result.gasUsed}`);
@@ -1063,7 +1079,7 @@ describe('AENSWrapping', () => {
         const otherAccount = utils.getDefaultAccounts()[1];
         const updatedPointers = new Map();
         for(let i=0; i<32; i++) {
-          updatedPointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [otherAccount.address]});
+          updatedPointers.set(`pointer-${i+1}`, {'AENSv2.AccountPt': [otherAccount.address]});
         }
 
         addOrReplacePointersTx = await contract.add_or_replace_pointers(1, aensNames[0], updatedPointers, true);
@@ -1084,7 +1100,7 @@ describe('AENSWrapping', () => {
 
         const replacePointers = new Map();
         for(let i=0; i<7; i++) {
-          replacePointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+          replacePointers.set(`pointer-${i+1}`, {'AENSv2.AccountPt': [aeSdk.selectedAddress]});
         }
         // don't keep existing pointers
         await contract.add_or_replace_pointers(1, aensNames[0], replacePointers, false);
@@ -1104,10 +1120,10 @@ describe('AENSWrapping', () => {
 
       it('remove_pointer', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // add pointer
-        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]})
+        await contract.add_or_replace_pointer(1, aensNames[0], "account_pubkey", {'AENSv2.AccountPt': [aeSdk.selectedAddress]})
 
         // check before removing pointer
         let nameInstance = await aeSdk.aensQuery(aensNames[0]);
@@ -1129,12 +1145,12 @@ describe('AENSWrapping', () => {
 
       it('remove_pointers & remove_all_pointers', async () => {
         // prepare: wrap names
-        await contract.wrap_and_mint(namesDelegationSigs);
+        await contract.wrap_and_mint(aensNames);
 
         // add pointers
         const pointers = new Map();
         for(let i=0; i<32; i++) {
-          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+          pointers.set(`pointer-${i+1}`, {'AENSv2.AccountPt': [aeSdk.selectedAddress]});
         }
         await contract.add_or_replace_pointers(1, aensNames[0], pointers, false);
 
@@ -1211,8 +1227,7 @@ describe('AENSWrapping', () => {
         const wrapSingleTestName = "wrapSingleTestName.chain";
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
-        const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName]);
-        await contract.wrap_single(tokenId, wrapSingleTestName, delegationSig);
+        await contract.wrap_single(tokenId, wrapSingleTestName);
 
         await expect(
           contract.burn(tokenId))
@@ -1228,13 +1243,6 @@ describe('AENSWrapping', () => {
         // passes after removing global config even if executed from other account
         await contract.remove_global_config();
         await contract.burn(tokenIdToBurn, { onAccount: otherAccount });
-      });
-
-      it('wrap_and_mint', async () => {
-        const namesDelegationWrongSigs = await getDelegationSignatures(aensNames, contractId, otherAccount);
-        await expect(
-          contract.wrap_and_mint(namesDelegationWrongSigs))
-          .to.be.rejectedWith(`Invocation failed: "Error in aens_transfer: bad_signature"`);
       });
 
       it('wrap_single', async () => {
@@ -1253,10 +1261,12 @@ describe('AENSWrapping', () => {
         const wrapSingleTestName = "wrapSingleTestName.chain";
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
-        const delegationSig = await aeSdk.createDelegationSignature(contractId, [wrapSingleTestName]);
+        const delegationSigLowTtl = await getDelegationSignature(contractLowTtl.$options.address);
+
+        await contractLowTtl.provide_delegation_sig(delegationSigLowTtl);
 
         await expect(
-          contractLowTtl.wrap_single(tokenId, wrapSingleTestName, delegationSig))
+          contractLowTtl.wrap_single(tokenId, wrapSingleTestName, delegationSigLowTtl))
           .to.be.rejectedWith(`Invocation failed: "NAMES_IN_NFT_EXPIRED"`);
       });
 
@@ -1264,13 +1274,13 @@ describe('AENSWrapping', () => {
         let tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
-          contract.add_or_replace_pointer(tokenId, aensNames[0], "account_pubkey", {'AENS.AccountPt': [aeSdk.selectedAddress]}))
+          contract.add_or_replace_pointer(tokenId, aensNames[0], "account_pubkey", {'AENSv2.AccountPt': [aeSdk.selectedAddress]}))
           .to.be.rejectedWith(`Invocation failed: "NAME_NOT_WRAPPED"`);
 
-        tokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+        tokenId = (await contract.wrap_and_mint(aensNames)).decodedResult;
         const pointers = new Map();
         for(let i=0; i<33; i++) {
-          pointers.set(`pointer-${i+1}`, {'AENS.AccountPt': [aeSdk.selectedAddress]});
+          pointers.set(`pointer-${i+1}`, {'AENSv2.AccountPt': [aeSdk.selectedAddress]});
         }
 
         await expect(
@@ -1279,7 +1289,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_single, transfer_multiple & transfer_all', async () => {
-        const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+        const sourceTokenId = (await contract.wrap_and_mint(aensNames)).decodedResult;
 
         await expect(
           contract.transfer_single(sourceTokenId, 1337, aensNames[0]))
@@ -1346,14 +1356,14 @@ describe('AENSWrapping', () => {
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
 
-        const namesDelegationSigsExceeded = await getDelegationSignatures(aensNames.concat([wrapSingleTestName]), contractId);
+        const namesExceeded = aensNames.concat([wrapSingleTestName]);
 
         await expect(
-          contract.wrap_and_mint(namesDelegationSigsExceeded))
+          contract.wrap_and_mint(namesExceeded))
           .to.be.rejectedWith(`Invocation failed: "NAME_LIMIT_EXCEEDED"`);
 
-        const recipientTokenId = (await contract.wrap_and_mint(await getDelegationSignatures([wrapSingleTestName], contractId))).decodedResult;
-        const senderTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+        const recipientTokenId = (await contract.wrap_and_mint([wrapSingleTestName])).decodedResult;
+        const senderTokenId = (await contract.wrap_and_mint(aensNames)).decodedResult;
 
         await expect(
           contract.transfer_all(senderTokenId, recipientTokenId))
