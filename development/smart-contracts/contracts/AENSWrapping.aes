@@ -5,6 +5,7 @@ include "./interfaces/IAEX141NFTReceiver.aes"
 include "./interfaces/IAENSWrapping.aes"
 
 include "Pair.aes"
+include "String.aes"
 
 main contract AENSWrapping : IAEX141, IAENSWrapping =
 
@@ -179,7 +180,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param name the name to lookup
     /// @return real owner
     entrypoint resolve_owner(name: string) : option(address) =
-        switch(Map.lookup(name, state.name_to_token))
+        switch(Map.lookup(String.to_lower(name), state.name_to_token))
             Some(nft_id) =>
                 Map.lookup(nft_id, state.token_to_owner)
             None => None
@@ -188,7 +189,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param name the name to lookup
     /// @return nft_id
     entrypoint resolve_nft_id(name: string) : option(int) =
-        Map.lookup(name, state.name_to_token)
+        Map.lookup(String.to_lower(name), state.name_to_token)
 
     /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
     /// @param name the name to lookup
@@ -582,7 +583,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     function require_name_wrapped(nft_id: int, name: string) : map(string, string) =
         let Some(MetadataMap(nft_metadata_map)) = Map.lookup(nft_id, state.metadata)
-        require(Map.member(name, nft_metadata_map), "NAME_NOT_WRAPPED")
+        require(Map.member(String.to_lower(name), nft_metadata_map), "NAME_NOT_WRAPPED")
         nft_metadata_map
 
     function require_not_expired(nft_id: int) : int =
@@ -634,7 +635,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         Chain.event(NameUnwrap(name, nft_id, current_owner, new_owner))
 
     stateful function __claim_and_assign(name_delegation_sig: string * signature, nft_id: int, expiration_height: int) : unit =
-        let name = Pair.fst(name_delegation_sig)
+        let name = String.to_lower(Pair.fst(name_delegation_sig))
         AENS.transfer(Call.caller, Contract.address, name, signature = Pair.snd(name_delegation_sig))
         let MetadataMap(nft_metadata_map) = Map.lookup_default(nft_id, state.metadata, MetadataMap({}))
         // adding name to the MetadataMap (value is irrelevant)
