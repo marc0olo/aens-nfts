@@ -12,8 +12,8 @@ if(!process.env.SECRET_KEY_DEPLOYER) {
 }
 
 // run 'generateBytecodeAndAci.js' first
-const aci = require('../generated_artifacts/aci.json');
-const bytecode = fs.readFileSync('../generated_artifacts/bytecode', 'utf8');
+const aci = require('../generated_artifacts/aci-ceres.json');
+const bytecode = fs.readFileSync('../generated_artifacts/bytecode-ceres', 'utf8');
 
 const AE_NETWORK = process.env.AE_NETWORK || 'TESTNET'
 const SETTINGS = {

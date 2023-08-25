@@ -14,5 +14,5 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Any user
-    Any user ->> NFT Contract: 1) transferMultipleNfts: recipient, Set(nft_id)
+    Any user ->> NFT Contract: 1) transfer_multiple_nfts: recipient, Set(nft_id), option(data)
 ```

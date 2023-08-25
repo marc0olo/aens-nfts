@@ -5,7 +5,7 @@
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) revokeSingle: nft_id, name
+    NFT owner ->> NFT Contract: 1) revoke_single: nft_id, name
     Note left of NFT Contract: revokes AENS name wrapped in the NFT
     Note left of NFT Contract: removes association of name to NFT
 ```
@@ -19,7 +19,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) revokeMultiple: nft_id, Set(names)
+    NFT owner ->> NFT Contract: 1) revoke_multiple: nft_id, Set(names)
     Note left of NFT Contract: revokes AENS names wrapped in the NFT
     Note left of NFT Contract: removes association of names to NFT
 ```
@@ -33,7 +33,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) revokeAll: nft_id
+    NFT owner ->> NFT Contract: 1) revoke_all: nft_id
     Note left of NFT Contract: revokes AENS names wrapped in the NFT
     Note left of NFT Contract: burns the NFT and removes all data associated to it
 ```

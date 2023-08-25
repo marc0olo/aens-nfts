@@ -14,10 +14,10 @@ const main = async () => {
         onCompiler: new CompilerHttp(compilerUrl),
     });
     const contract = await aeSdk.initializeContract({ sourceCode, fileSystem });
-    fs.writeFile('../generated_artifacts/aci.json', JSON.stringify(contract._aci), (err) => {
+    fs.writeFile('../generated_artifacts/aci-iris.json', JSON.stringify(contract._aci), (err) => {
         if (err) throw err;
     });
-    fs.writeFile('../generated_artifacts/bytecode', contract.$options.bytecode, (err) => {
+    fs.writeFile('../generated_artifacts/bytecode-iris', contract.$options.bytecode, (err) => {
         if (err) throw err;
     });
 }

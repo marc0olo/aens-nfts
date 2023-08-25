@@ -5,7 +5,7 @@
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) unwrapSingle: nft_id, name, option(recipient)
+    NFT owner ->> NFT Contract: 1) unwrap_single: nft_id, name, option(recipient)
     NFT Contract -->> NFT owner: 1.1) transfer name
 ```
 
@@ -14,7 +14,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) unwrapMultiple: nft_id, Set(names), option(recipient)
+    NFT owner ->> NFT Contract: 1) unwrap_multiple: nft_id, Set(names), option(recipient)
     NFT Contract -->> NFT owner: 1.1) transfer names
 ```
 
@@ -23,8 +23,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor NFT owner
-    NFT owner ->> NFT Contract: 1) unwrapAll: nft_id, option(recipient)
-    Note left of NFT Contract: burns the NFT
+    NFT owner ->> NFT Contract: 1) unwrap_all: nft_id, option(recipient)
     NFT Contract -->> NFT owner: 1.1) transfer names
 ```
 
