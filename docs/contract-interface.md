@@ -1,6 +1,6 @@
 # Contract Interface
 
-## AEX-141
+## IAEX141
 
 ```sophia
 contract interface IAEX141 =
@@ -43,7 +43,7 @@ contract interface IAEX141 =
     stateful entrypoint burn : (int) => unit
 ```
 
-## AENS Wrapping
+## IAENSWrapping
 
 ```sophia
 contract interface IAENSWrapping : IAEX141 =
