@@ -2,8 +2,10 @@
 
 include "./interfaces/IAEX141.aes"
 include "./interfaces/IAEX141NFTReceiver.aes"
+include "./interfaces/IAENSWrapping.aes"
 include "./interfaces/IAENSWrappingCeres.aes"
 
+include "Option.aes"
 include "Pair.aes"
 include "String.aes"
 
@@ -75,7 +77,9 @@ main contract AENSWrappingCeres : IAEX141, IAENSWrappingCeres =
         // nft_id, caller, reward
         | Reward(int, address, int)
 
-    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int) : state =
+    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int, old_contract: option(IAENSWrapping)) : state =
+        if(Option.is_some(old_contract))
+            Option.force(old_contract).activate_migration()
         { meta_info = { name = name, symbol = symbol, base_url = None, metadata_type = MAP },
           token_to_owner = {},
           owner_to_tokens = {},
@@ -250,7 +254,7 @@ main contract AENSWrappingCeres : IAEX141, IAENSWrappingCeres =
         let expected : bytes() = Bytes.concat(
             Bytes.concat(String.to_bytes(Chain.network_id), Address.to_bytes(Call.caller)),
             Bytes.concat(String.to_bytes("AENS"), Address.to_bytes(Contract.address)))
-        require(Crypto.verify_sig(Crypto.blake2b(expected), Call.caller, delegation_sig), "INVALID_DELEGATION_SIGNATURE")
+        require(Crypto.verify_sig(expected, Call.caller, delegation_sig), "INVALID_DELEGATION_SIGNATURE")
         put(state{ account_to_signature[Call.caller] @sig = delegation_sig })
 
     /// @notice removes the delegation signature

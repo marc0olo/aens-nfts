@@ -34,6 +34,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , can_receive_from_others: bool
         , burnable_if_expired_or_empty: bool }
 
+    record migration_data =
+        { names: list(string)
+        , expiration_height: Chain.ttl }
+
     record state =
         { meta_info: meta_info
         , token_to_owner: map(int, address)
@@ -51,7 +55,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , operators: map(address, map(address, bool))
         , metadata: map(int, metadata)
         , total_supply: int
-        , counter: int }
+        , counter: int
+        , admin: address
+        , migration_target_deployer: option(address)
+        , migration_target_contract_address: option(address) }
 
     datatype event
         = Transfer(address, address, int)
@@ -74,8 +81,15 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
+        // authorized_deployer
+        | MigrationTargetDeployerSet(address)
+        | MigrationTargetDeployerUnset()
+        // ceres_contract_address
+        | MigrationActivation(address)
+        // nft_id, wrapped_names_count, owner
+        | Migrate(int, int, address)
 
-    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int) : state =
+    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int, admin: address) : state =
         { meta_info = { name = name, symbol = symbol, base_url = None, metadata_type = MAP },
           token_to_owner = {},
           owner_to_tokens = {},
@@ -92,7 +106,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           operators = {},
           metadata = {},
           total_supply = 0,
-          counter = 1 }
+          counter = 1,
+          admin = admin,
+          migration_target_deployer = None,
+          migration_target_contract_address = None }
 
     entrypoint aex141_extensions() : list(string) =
         ["mintable", "burnable"]
@@ -540,6 +557,60 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     stateful entrypoint burn_multiple_nfts(nft_ids: Set.set(int)) : unit =
         List.foreach(Set.to_list(nft_ids), (id) => __burn_single(id))
 
+    /// @notice returns the address of the admin that can set the contract address of the future ceres contract to handle the migration
+    entrypoint get_admin() : address =
+        state.admin
+
+    /// @notice returns the address of the admin OR an alternative address that can be defined by the admin for deployment of the target contract
+    entrypoint get_migration_target_deployer() : address =
+        Option.default(state.admin, state.migration_target_deployer)
+
+    /// @notice defines an address which will be authorized to deploy the contract that activates the migration (can only be executed by admin)
+    /// @param deployer the address that shall be authorized or None to make the admin responsible for deployment of a target
+    stateful entrypoint set_migration_target_deployer(deployer: option(address)) : unit =
+        require(Call.caller == state.admin, "ONLY_ADMIN_CAN_SET_DEPLOYER")
+        put(state{ migration_target_deployer = deployer })
+        if(Option.is_some(deployer))
+            Chain.event(MigrationTargetDeployerSet(Option.force(deployer)))
+        else
+            Chain.event(MigrationTargetDeployerUnset)
+
+    /// @notice returns the address of the target ceres contract that users can use to perform a migration to
+    /// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet
+    entrypoint get_migration_target() : option(address) =
+        state.migration_target_contract_address
+
+    /// @notice activates the migration which can be triggered with an updated target contract after ceres protocol upgrade. entrypoint can only be called by the deployer address via deployment of the target contract
+    stateful entrypoint activate_migration() : unit =
+        require(Call.origin == get_migration_target_deployer(), "ORIGIN_MUST_BE_DEPLOYER")
+        require(Address.is_contract(Call.caller), "CALLER_MUST_BE_TARGET_CONTRACT")
+        put(state{ migration_target_contract_address = Some(Call.caller) })
+        Chain.event(MigrationActivation(Call.caller))
+
+    /// @notice migrates & burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)
+    /// @param nft_id the id of the NFT to migrate & burn
+    /// @return the migration data that the ceres contract needs set the correct internal state
+    stateful entrypoint migrate(nft_id: int) : migration_data =
+        require(Option.is_some(state.migration_target_contract_address), "MIGRATION_NOT_ACTIVATED_YET")
+        require(Call.caller == Option.force(state.migration_target_contract_address), "MIGRATION_MUST_BE_TRIGGERED_BY_TARGET_CONTRACT")
+        let owner = require_exists(nft_id)
+        require(Call.origin == owner, "ORIGIN_MUST_BE_OWNER")
+        let wrapped_names = require_names_wrapped(nft_id)
+        List.foreach(wrapped_names, (name) => __migrate(name))
+        __remove_approval(nft_id)
+        let migration_data = { names = wrapped_names,
+                               expiration_height = state.token_to_name_expiration[nft_id] }
+        put(state{ balances[owner] @balance = balance - 1
+            , total_supply = state.total_supply - 1
+            , token_to_owner = Map.delete(nft_id, state.token_to_owner)
+            , owner_to_tokens[owner] @owners_tokens = Set.delete(nft_id, owners_tokens)
+            , token_to_name_expiration = Map.delete(nft_id, state.token_to_name_expiration)
+            , token_to_config = Map.delete(nft_id, state.token_to_config)
+            , metadata = Map.delete(nft_id, state.metadata) })
+        Chain.event(Migrate(nft_id, List.length(wrapped_names), owner))
+        Chain.event(Burn(owner, nft_id))
+        migration_data
+
     // external helpers for AEX-141
 
     entrypoint get_owned_tokens(owner: address) : list(int) =
@@ -628,6 +699,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         let new_owner = Option.default(current_owner, recipient)
         AENS.transfer(Contract.address, new_owner, name)
         Chain.event(NameUnwrap(name, nft_id, current_owner, new_owner))
+
+    stateful function __migrate(name: string) : unit =
+        put(state{ name_to_token @ val = Map.delete(name, val) })
+        AENS.transfer(Contract.address, Option.force(state.migration_target_contract_address), name)
 
     stateful function __claim_and_assign((name0, sig): string * signature, nft_id: int, expiration_height: int) : unit =
         let name = String.to_lower(name0)

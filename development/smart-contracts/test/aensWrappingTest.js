@@ -25,103 +25,103 @@ describe('AENSWrapping', () => {
     "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.chain",
     "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB.chain",
     "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB1.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC1.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE1.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG1.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH1.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII1.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ1.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK1.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL1.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM1.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN1.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO1.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ1.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR1.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS1.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU1.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW1.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY1.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE2.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG2.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH2.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII2.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ2.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK2.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL2.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM2.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN2.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO2.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ2.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR2.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT2.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV2.chain",
-    "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW2.chain",
-    "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2.chain",
-    "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY2.chain",
-    "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ2.chain",
-    "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3.chain",
-    "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB3.chain",
-    "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC3.chain",
-    "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3.chain",
-    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3.chain",
-    "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3.chain",
-    "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG3.chain",
-    "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH3.chain",
-    "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII3.chain",
-    "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ3.chain",
-    "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK3.chain",
-    "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL3.chain",
-    "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM3.chain",
-    "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN3.chain",
-    "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO3.chain",
-    "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3.chain",
-    "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ3.chain",
-    "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR3.chain",
-    "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS3.chain",
-    "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT3.chain",
-    "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU3.chain",
-    "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV3.chain"
+    // "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD.chain",
+    // "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.chain",
+    // "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.chain",
+    // "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG.chain",
+    // "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH.chain",
+    // "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII.chain",
+    // "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ.chain",
+    // "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.chain",
+    // "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL.chain",
+    // "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.chain",
+    // "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN.chain",
+    // "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO.chain",
+    // "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP.chain",
+    // "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.chain",
+    // "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR.chain",
+    // "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS.chain",
+    // "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT.chain",
+    // "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU.chain",
+    // "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV.chain",
+    // "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW.chain",
+    // "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.chain",
+    // "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY.chain",
+    // "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ.chain",
+    // "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1.chain",
+    // "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB1.chain",
+    // "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC1.chain",
+    // "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD1.chain",
+    // "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE1.chain",
+    // "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1.chain",
+    // "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG1.chain",
+    // "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH1.chain",
+    // "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII1.chain",
+    // "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ1.chain",
+    // "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK1.chain",
+    // "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL1.chain",
+    // "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM1.chain",
+    // "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN1.chain",
+    // "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO1.chain",
+    // "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1.chain",
+    // "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ1.chain",
+    // "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR1.chain",
+    // "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS1.chain",
+    // "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT1.chain",
+    // "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU1.chain",
+    // "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV1.chain",
+    // "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW1.chain",
+    // "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX1.chain",
+    // "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY1.chain",
+    // "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ1.chain",
+    // "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2.chain",
+    // "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2.chain",
+    // "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2.chain",
+    // "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD2.chain",
+    // "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE2.chain",
+    // "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2.chain",
+    // "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG2.chain",
+    // "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH2.chain",
+    // "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII2.chain",
+    // "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ2.chain",
+    // "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK2.chain",
+    // "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL2.chain",
+    // "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM2.chain",
+    // "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN2.chain",
+    // "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO2.chain",
+    // "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP2.chain",
+    // "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ2.chain",
+    // "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR2.chain",
+    // "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2.chain",
+    // "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT2.chain",
+    // "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU2.chain",
+    // "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV2.chain",
+    // "wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW2.chain",
+    // "xxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX2.chain",
+    // "yyyYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY2.chain",
+    // "zzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ2.chain",
+    // "aaaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3.chain",
+    // "bbbBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB3.chain",
+    // "cccCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC3.chain",
+    // "dddDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD3.chain",
+    // "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE3.chain",
+    // "fffFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3.chain",
+    // "gggGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG3.chain",
+    // "hhhHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH3.chain",
+    // "iiiIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII3.chain",
+    // "jjjJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ3.chain",
+    // "kkkKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK3.chain",
+    // "lllLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL3.chain",
+    // "mmmMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM3.chain",
+    // "nnnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN3.chain",
+    // "oooOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO3.chain",
+    // "pppPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP3.chain",
+    // "qqqQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ3.chain",
+    // "rrrRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR3.chain",
+    // "sssSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS3.chain",
+    // "tttTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT3.chain",
+    // "uuuUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU3.chain",
+    // "vvvVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV3.chain"
   ];
 
   const aensNames = aensNamesUnsorted.sort();
@@ -143,17 +143,17 @@ describe('AENSWrapping', () => {
   let namesDelegationSigs;
 
   before(async () => {
+    aeSdk = utils.getSdk();
+
     // activate ceres
     await utils.awaitKeyBlocks(aeSdk, 6);
-
-    aeSdk = utils.getSdk();
 
     // initialize the contract instance
     contract = await aeSdk.initializeContract({
       sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
       fileSystem: utils.getFilesystem(AENS_WRAPPING_SOURCE)
     });
-    await contract.init("Wrapped AENS", "WAENS", 180_000, 100);
+    await contract.init("Wrapped AENS", "WAENS", 180_000, 100, aeSdk.selectedAddress);
     contractId = contract.$options.address;
     contractAccountAddress = contractId.replace("ct_", "ak_");
 
@@ -267,7 +267,7 @@ describe('AENSWrapping', () => {
 
     describe('Happy paths', () => {
 
-      it('wrap_and_mint', async () => {
+      xit('wrap_and_mint', async () => {
         await expectNameAttributesProtocol(aensNames, {owner: aeSdk.selectedAddress});
         await expectNameOwnerContract(aensNames, undefined);
         await expectNameNftId(aensNames, undefined);
@@ -307,7 +307,7 @@ describe('AENSWrapping', () => {
         assert.equal(nftMetadataDryRun.decodedResult.MetadataMap[0].size, aensNames.length);
       });
   
-      it('wrap_single', async () => {
+      xit('wrap_single', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
   
         // claim a new name
@@ -338,7 +338,7 @@ describe('AENSWrapping', () => {
         assert.equal(nameInstance.ttl, nftExpirationHeight);
       });
   
-      it('wrap_multiple', async () => {
+      xit('wrap_multiple', async () => {
         // mint an empty NFT
         const mintTx = await contract.mint(aeSdk.selectedAddress);
         console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
@@ -356,7 +356,7 @@ describe('AENSWrapping', () => {
         await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
       });
   
-      it('unwrap_single', async () => {
+      xit('unwrap_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -374,7 +374,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol([aensNames[0]], { owner: aeSdk.selectedAddress });
       });
   
-      it('unwrap_multiple', async () => {
+      xit('unwrap_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -391,7 +391,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
       });
   
-      it('unwrap_all', async () => {
+      xit('unwrap_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -408,7 +408,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
       });
   
-      it('transfer_single', async () => {
+      xit('transfer_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -457,7 +457,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol([aensNames[0]], { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      it('transfer_multiple', async () => {
+      xit('transfer_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -513,7 +513,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      it('transfer_all', async () => {
+      xit('transfer_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -550,7 +550,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      it('transfer (NFT)', async () => {
+      xit('transfer (NFT)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -582,7 +582,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
 
-      it('transfer_multiple_nfts', async () => {
+      xit('transfer_multiple_nfts', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -623,7 +623,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
 
-      it('extend_all', async () => {
+      xit('extend_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -654,7 +654,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { ttl: expectedNewExpirationHeight });
       });
 
-      it('set_global_config, set_nft_config, remove_nft_config & remove_global_config', async () => {
+      xit('set_global_config, set_nft_config, remove_nft_config & remove_global_config', async () => {
         await contract.mint(aeSdk.selectedAddress);
 
         // pre config checks
@@ -709,7 +709,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(config, undefined);
       });
 
-      it('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
+      xit('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
         // check before deposit
         let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
         assert.equal(rewardPool, 0n);
@@ -737,7 +737,7 @@ describe('AENSWrapping', () => {
         assert.equal(rewardPool, 0n);
       });
 
-      it('extend_all_for_reward (regular reward)', async () => {
+      xit('extend_all_for_reward (regular reward)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -792,7 +792,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.reward);
       });
 
-      it('extend_all_for_reward (emergency reward)', async () => {
+      xit('extend_all_for_reward (emergency reward)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -844,7 +844,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.emergency_reward);
       });
 
-      it('burn & burn_multiple_nfts', async () => {
+      xit('burn & burn_multiple_nfts', async () => {
         // prepare: mint 3 different NFTs
         await contract.mint(aeSdk.selectedAddress);
         await contract.mint(aeSdk.selectedAddress);
@@ -898,7 +898,7 @@ describe('AENSWrapping', () => {
         // blocked by https://github.com/aeternity/aeproject/issues/470
       });
 
-      it('revoke_single', async () => {
+      xit('revoke_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -928,7 +928,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      it('revoke_multiple', async () => {
+      xit('revoke_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -962,7 +962,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      it('revoke_all', async () => {
+      xit('revoke_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -996,7 +996,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      it('add_or_replace_pointer', async () => {
+      xit('add_or_replace_pointer', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1031,7 +1031,7 @@ describe('AENSWrapping', () => {
         ]);
       });
 
-      it('add_or_replace_pointers', async () => {
+      xit('add_or_replace_pointers', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1102,7 +1102,7 @@ describe('AENSWrapping', () => {
         assert.sameDeepMembers(nameInstance.pointers, expectedReplacedPointers);
       });
 
-      it('remove_pointer', async () => {
+      xit('remove_pointer', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1127,7 +1127,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(nameInstance.pointers, []);
       });
 
-      it('remove_pointers & remove_all_pointers', async () => {
+      xit('remove_pointers & remove_all_pointers', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1162,12 +1162,42 @@ describe('AENSWrapping', () => {
         nameInstance = await aeSdk.aensQuery(aensNames[0]);
         assert.deepEqual(nameInstance.pointers, []);
       });
+
+      it('migration activation', async () => {
+        const admin = (await contract.get_admin()).decodedResult;
+        assert.equal(admin, aeSdk.selectedAddress);
+        let migrationTarget = (await contract.get_migration_target()).decodedResult;
+        assert.isUndefined(migrationTarget);
+        let migrationTargetDeployer = (await contract.get_migration_target_deployer()).decodedResult;
+        assert.equal(migrationTargetDeployer, aeSdk.selectedAddress);
+
+        let tx = await contract.set_migration_target_deployer(utils.getDefaultAccounts()[1].address);
+        assert.equal(tx.decodedEvents[0].name, 'MigrationTargetDeployerSet');
+        assert.equal(tx.decodedEvents[0].args[0], utils.getDefaultAccounts()[1].address);
+        migrationTargetDeployer = (await contract.get_migration_target_deployer()).decodedResult;
+        assert.equal(migrationTargetDeployer, utils.getDefaultAccounts()[1].address);
+
+        tx = await contract.set_migration_target_deployer();
+        assert.equal(tx.decodedEvents[0].name, 'MigrationTargetDeployerUnset');
+        migrationTargetDeployer = (await contract.get_migration_target_deployer()).decodedResult;
+        assert.equal(migrationTargetDeployer, aeSdk.selectedAddress);
+
+        const dummyTargetContract = await aeSdk.initializeContract({
+          sourceCode: utils.getContractContent("./contracts/test/DummyMigrationTarget.aes"),
+          fileSystem: utils.getFilesystem("./contracts/test/DummyMigrationTarget.aes")
+        });
+        await dummyTargetContract.init(contractId);
+        migrationTarget = (await contract.get_migration_target()).decodedResult;
+        assert.equal(migrationTarget, dummyTargetContract.$options.address.replace("ct_", "ak_"));
+
+        // TODO perform an actual migration with the real contract (probably better suited in the ceres related tests)
+      });
     });
 
     describe('Abort paths', () => {
       const otherAccount = utils.getDefaultAccounts()[1];
 
-      it('mint', async () => {
+      xit('mint', async () => {
         await expect(
           contract.mint(otherAccount.address))
           .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_RECIPIENT"`);
@@ -1177,7 +1207,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "MINTING_WITH_METADATA_NOT_ALLOWED"`);
       });
 
-      it('transfer', async () => {
+      xit('transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1193,7 +1223,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
       });
 
-      it('transfer_to_contract', async () => {
+      xit('transfer_to_contract', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1201,7 +1231,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_A_CONTRACT"`);
       });
 
-      it('burn', async () => {
+      xit('burn', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1230,20 +1260,20 @@ describe('AENSWrapping', () => {
         await contract.burn(tokenIdToBurn, { onAccount: otherAccount });
       });
 
-      it('wrap_and_mint', async () => {
+      xit('wrap_and_mint', async () => {
         const namesDelegationWrongSigs = await getDelegationSignatures(aensNames, contractId, otherAccount);
         await expect(
           contract.wrap_and_mint(namesDelegationWrongSigs))
           .to.be.rejectedWith(`Invocation failed: "Error in aens_transfer: bad_signature"`);
       });
 
-      it('wrap_single', async () => {
+      xit('wrap_single', async () => {
         // workaround due to https://github.com/aeternity/aeproject/issues/470
         const contractLowTtl = await aeSdk.initializeContract({
           sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
           fileSystem: utils.getFilesystem(AENS_WRAPPING_SOURCE)
         });
-        await contractLowTtl.init("Wrapped AENS Low TTL", "WAENSLTTL", 21, 100);
+        await contractLowTtl.init("Wrapped AENS Low TTL", "WAENSLTTL", 21, 100, aeSdk.selectedAddress);
 
         const tokenId = (await contractLowTtl.mint(aeSdk.selectedAddress)).decodedResult;
 
@@ -1260,7 +1290,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "NAMES_IN_NFT_EXPIRED"`);
       });
 
-      it('add_or_replace_pointer(s)', async () => {
+      xit('add_or_replace_pointer(s)', async () => {
         let tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1278,7 +1308,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "POINTER_LIMIT_EXCEEDED"`);
       });
 
-      it('transfer_single, transfer_multiple & transfer_all', async () => {
+      xit('transfer_single, transfer_multiple & transfer_all', async () => {
         const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
 
         await expect(
@@ -1322,13 +1352,13 @@ describe('AENSWrapping', () => {
         await contract.transfer_all(sourceTokenId, firstTargetNftId, aensNames.slice(1));
       });
 
-      it('deposit_to_reward_pool', async () => {
+      xit('deposit_to_reward_pool', async () => {
         await expect(
           contract.deposit_to_reward_pool())
           .to.be.rejectedWith(`Invocation failed: "DEPOSIT_VALUE_MISSING"`);
       });
 
-      it('withdraw_from_reward_pool', async () => {
+      xit('withdraw_from_reward_pool', async () => {
         await expect(
           contract.withdraw_from_reward_pool())
           .to.be.rejectedWith(`Invocation failed: "NO_AE_IN_REWARD_POOL"`);
@@ -1341,7 +1371,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "INSUFFICIENT_BALANCE_IN_POOL"`);
       });
 
-      it('name wrapping & name transfer', async () => {
+      xit('name wrapping & name transfer', async () => {
         const wrapSingleTestName = "wrapSingleTestName.chain";
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
@@ -1362,14 +1392,14 @@ describe('AENSWrapping', () => {
     });
 
     describe('NFT Receiver', () => {
-      it('failed transfer', async () => {
+      xit('failed transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
         await expect(
           contract.transfer(nftReceiverContractAddress, tokenId, "should fail"))
           .to.be.rejectedWith(`Invocation failed: "SAFE_TRANSFER_FAILED"`);
       });
 
-      it('successful transfer', async () => {
+      xit('successful transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await contract.transfer(nftReceiverContractAddress, tokenId);

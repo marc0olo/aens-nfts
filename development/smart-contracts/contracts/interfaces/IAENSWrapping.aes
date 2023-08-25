@@ -15,6 +15,13 @@ contract interface IAENSWrapping =
         | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
+        // authorized_deployer
+        | MigrationTargetDeployerSet(address)
+        | MigrationTargetDeployerUnset()
+        // ceres_contract_address
+        | MigrationActivation(address)
+        // nft_id, wrapped_names_count, owner
+        | Migrate(int, int, address)
 
     record nft_data =
         { id: int
@@ -30,6 +37,10 @@ contract interface IAENSWrapping =
         , emergency_reward_block_window: int
         , can_receive_from_others: bool
         , burnable_if_empty: bool }
+
+    record migration_data =
+        { names: list(string)
+        , expiration_height: Chain.ttl }
 
     /// @notice returns the account address of the real owner
     /// @param name the name to lookup
@@ -210,3 +221,25 @@ contract interface IAENSWrapping =
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn
     stateful entrypoint burn_multiple_nfts : (Set.set(int)) => unit
+
+    /// @notice returns the address of the admin that can set the contract address of the future ceres contract to handle the migration
+    entrypoint get_admin : () => address
+
+    /// @notice returns the address of the admin OR an alternative address that can be defined by the admin for deployment of the target contract
+    entrypoint get_migration_target_deployer : () => address
+
+    /// @notice defines an address which will be authorized to deploy the contract that activates the migration
+    /// @param deployer the address that shall be authorized
+    stateful entrypoint set_migration_target_deployer : (address) => unit
+
+    /// @notice returns the address of the target ceres contract that users can use to perform a migration to
+    /// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet
+    entrypoint get_migration_target : () => option(address)
+
+    /// @notice activates the migration which can be triggered with an updated target contract after ceres protocol upgrade. entrypoint can only be called by the deployer address via deployment of the target contract
+    stateful entrypoint activate_migration : () => unit
+
+    /// @notice migrates & burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)
+    /// @param nft_id the id of the NFT to migrate & burn
+    /// @return the migration data that the ceres contract needs set the correct internal state
+    stateful entrypoint migrate : (int) => migration_data

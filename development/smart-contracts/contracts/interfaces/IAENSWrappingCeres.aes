@@ -216,3 +216,7 @@ contract interface IAENSWrappingCeres =
     /// @notice burns a set of NFTs (only possible if AENS names are expired)
     /// @param nft_ids the ids of the NFTs to burn
     stateful entrypoint burn_multiple_nfts : (Set.set(int)) => unit
+
+    /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract and mints a new NFT in this contract
+    /// @param nft_id the id of the NFT to migrate
+    stateful entrypoint trigger_migration : (int) => unit
