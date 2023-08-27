@@ -17,4 +17,5 @@ jobs:
           node-version: 18.x
       - run: npm ci
       - run: npx aeproject env && sleep 3
-      - run: npx aeproject test
+      - run: npm run test:iris
+      - run: npm run test:ceres

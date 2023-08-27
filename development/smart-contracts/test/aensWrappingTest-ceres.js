@@ -185,14 +185,12 @@ describe('AENSWrapping', () => {
 
     networkId = (await aeSdk.getNodeInfo()).nodeNetworkId;
 
-    console.log(networkId);
-
     // get delegation sig for default account
     delegationSig = await getDelegationSignature(contractId);
-    console.log(delegationSig);
 
-    const sophia_msg = (await contract.provide_delegation_sig(delegationSig)).decodedResult;
-    console.log(`Sophia msg: ${sophia_msg}`);
+    // TODO waiting for feedback https://github.com/aeternity/aeternity/issues/4192
+    // const sophia_msg = (await contract.provide_delegation_sig(delegationSig)).decodedResult;
+    // console.log(`Sophia msg: ${sophia_msg}`);
 
     // create a snapshot of the blockchain state
     await utils.createSnapshot(aeSdk);
