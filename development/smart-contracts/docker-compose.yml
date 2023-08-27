@@ -2,7 +2,7 @@ version: '3.6'
 services:
 
   aeproject_node:
-    image: aeternity/aeternity:${NODE_TAG:-v6.11.0}-bundle
+    image: aeternity/aeternity:v6.11.0-bundle
     hostname: node
     environment:
       AETERNITY_CONFIG: /home/aeternity/aeternity.yaml
@@ -11,7 +11,7 @@ services:
       - './docker/accounts.json:/home/aeternity/node/data/aecore/.genesis/accounts_test.json'
 
   aeproject_compiler:
-    image: aeternity/aesophia_http:${COMPILER_TAG:-v7.5.0}
+    image: aeternity/aesophia_http:v7.5.0
     hostname: compiler
     ports:
       - '3080:3080'
