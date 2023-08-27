@@ -4,7 +4,7 @@
   "description": "This is the default package.json generated for your project",
   "scripts": {
     "test": "npm run test:iris",
-    "test:iris": "mocha ./test/aensWrappingTest.js --timeout 0 --exit",
+    "test:iris": "mocha ./test/aensWrappingTest-iris.js --timeout 0 --exit",
     "test:ceres": "mocha ./test/aensWrappingTest-ceres.js --timeout 0 --exit"
   },
   "dependencies": {

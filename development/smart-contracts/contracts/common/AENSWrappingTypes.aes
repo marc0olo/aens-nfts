@@ -1,0 +1,20 @@
+namespace AENSWrappingTypes =
+
+    record nft_data =
+        { id: int
+        , owner: address
+        , owner_config: option(config)
+        , names: list(string)
+        , expiration_height: int }
+
+    record config =
+        { reward: int
+        , reward_block_window: int
+        , emergency_reward: int
+        , emergency_reward_block_window: int
+        , can_receive_from_others: bool
+        , burnable_if_expired_or_empty: bool }
+
+    record migration_data =
+        { names: list(string)
+        , expiration_height: Chain.ttl }

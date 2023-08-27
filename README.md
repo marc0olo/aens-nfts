@@ -18,6 +18,32 @@ The results of the work in this grant will:
 * allow strangers to extend AENS names and get rewarded for that
 * make AENS names easily tradable on NFT marketplaces
 
+## Simple explainer
+By calling the entrypoint `wrap_and_mint`, users can wrap up to 100 AENS names (`name_limit` configured during deployment of the contract) into an NFT.
+
+The AENSWrapping contract syncs the expiration of all wrapped AENS names by extending all of them with the `max_name_ttl` (configured during deployment of the contract).
+
+![alt text](./docs/images/aenswrapping-mint.png)
+
+Every user can:
+
+* create as many NFTs as they want and thus wrap as many AENS names as they want
+* wrap/unwrap AENS names into/from existing NFTs that they own
+* add or replace pointer(s) of a specific AENS name that is wrapped into an NFT that they own
+* revoke AENS names that are wrapped into NFTs that they own
+* transfer NFTs (and thus also the wrapped AENS names) to other users
+* define a global config to define:
+    * reward (incl. reward block window) for other users for extending their names
+    * emergency-reward (incl. emergency reward block window) for other users for extending their names
+    * if other users can transfer AENS names into NFTs that they own
+    * if other users can burn NFTs that they own in case they are empty
+* define a similar config for each NFT they own (overrrules the global config)
+* deposit AE to the reward pool in order to reward other users for extending their names
+* withdraw of AE from the reward pool
+* extend all AENS names wrapped into a specific NFT (no matter if they own it or not) by calling:
+    * `extend_all` (no reward, good will)
+    * `extend_all_for_reward` (rewards the user in case there is a reward configured, the reward block window is reached and the owner of the NFT has AE deposited to the reward pool)
+
 ## Full example sequence
 
 ```mermaid

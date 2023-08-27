@@ -1,12 +1,15 @@
-contract interface IAEX141 =
+namespace AEX141Types =
+
     datatype metadata_type = URL | OBJECT_ID | MAP
     datatype metadata = MetadataIdentifier(string) | MetadataMap(map(string, string))
 
-    record meta_info = 
+    record meta_info =
         { name: string
         , symbol: string
         , base_url: option(string)
         , metadata_type : metadata_type }
+
+contract interface IAEX141 =
 
     datatype event
         = Transfer(address, address, int)
@@ -18,8 +21,8 @@ contract interface IAEX141 =
         | Burn(address, int)
 
     entrypoint aex141_extensions : () => list(string)
-    entrypoint meta_info : () => meta_info
-    entrypoint metadata : (int) => option(metadata)
+    entrypoint meta_info : () => AEX141Types.meta_info
+    entrypoint metadata : (int) => option(AEX141Types.metadata)
     entrypoint total_supply : () => int
     entrypoint balance : (address) => option(int)
     entrypoint owner : (int) => option(address)  
@@ -32,7 +35,7 @@ contract interface IAEX141 =
     entrypoint is_approved_for_all : (address, address) => bool
 
     // extension mintable
-    stateful entrypoint mint : (address, option(metadata), option(string)) => int
+    stateful entrypoint mint : (address, option(AEX141Types.metadata), option(string)) => int
 
     // extension "burnable"
     stateful entrypoint burn : (int) => unit

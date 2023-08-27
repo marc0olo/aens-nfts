@@ -1,3 +1,5 @@
+include "../common/AENSWrappingTypes.aes"
+
 include "Set.aes"
 
 contract interface IAENSWrappingCeres =
@@ -15,21 +17,6 @@ contract interface IAENSWrappingCeres =
         | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
-
-    record nft_data =
-        { id: int
-        , owner: address
-        , owner_config: option(config)
-        , names: list(string)
-        , expiration_height: int }
-
-    record config =
-        { reward: int
-        , reward_block_window: int
-        , emergency_reward: int
-        , emergency_reward_block_window: int
-        , can_receive_from_others: bool
-        , burnable_if_empty: bool }
 
     /// @notice returns the account address of the real owner
     /// @param name the name to lookup
@@ -49,7 +36,7 @@ contract interface IAENSWrappingCeres =
     /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
     /// @param nft_id the NFT id
     /// @return nft_data
-    entrypoint get_nft_data : (string) => option(nft_data)
+    entrypoint get_nft_data : (int) => option(AENSWrappingTypes.nft_data)
 
     /// @notice returns the expiration height of names that are wrapped into the provided nft id
     /// @param nft_id the NFT id
@@ -59,7 +46,7 @@ contract interface IAENSWrappingCeres =
     /// @notice returns the global config for an account
     /// @param account the account address to lookup the config for
     /// @return the global config for an account OR None if not set
-    entrypoint get_global_config : (address) => option(config)
+    entrypoint get_global_config : (address) => option(AENSWrappingTypes.config)
 
     /// @notice returns the balance included in the reward pool
     /// @param account the account where the reward pool balance should be looked up for
@@ -173,7 +160,7 @@ contract interface IAENSWrappingCeres =
 
     /// @notice caller sets global config for NFTs owned by the caller
     /// @param config the global config
-    stateful entrypoint set_global_config : (config) => unit
+    stateful entrypoint set_global_config : (AENSWrappingTypes.config) => unit
 
     /// @notice caller removes global config for NFTs owned by the caller
     stateful entrypoint remove_global_config : () => unit
@@ -181,7 +168,7 @@ contract interface IAENSWrappingCeres =
     /// @notice caller sets NFT specific config
     /// @param nft_id the id of the NFT to set the config
     /// @param config the nft specific config
-    stateful entrypoint set_nft_config : (int, config) => unit
+    stateful entrypoint set_nft_config : (int, AENSWrappingTypes.config) => unit
 
     /// @notice caller removes NFT specific config
     /// @param nft_id the id of the NFT to remove the config from
@@ -219,4 +206,5 @@ contract interface IAENSWrappingCeres =
 
     /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract and mints a new NFT in this contract
     /// @param nft_id the id of the NFT to migrate
-    stateful entrypoint trigger_migration : (int) => unit
+    /// @return the id of the NFT minted in this contract
+    stateful entrypoint trigger_migration : (int) => int
