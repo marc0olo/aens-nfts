@@ -267,7 +267,7 @@ describe('AENSWrapping', () => {
 
     describe('Happy paths', () => {
 
-      xit('wrap_and_mint', async () => {
+      it('wrap_and_mint', async () => {
         await expectNameAttributesProtocol(aensNames, {owner: aeSdk.selectedAddress});
         await expectNameOwnerContract(aensNames, undefined);
         await expectNameNftId(aensNames, undefined);
@@ -307,7 +307,7 @@ describe('AENSWrapping', () => {
         assert.equal(nftMetadataDryRun.decodedResult.MetadataMap[0].size, aensNames.length);
       });
   
-      xit('wrap_single', async () => {
+      it('wrap_single', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
   
         // claim a new name
@@ -338,7 +338,7 @@ describe('AENSWrapping', () => {
         assert.equal(nameInstance.ttl, nftExpirationHeight);
       });
   
-      xit('wrap_multiple', async () => {
+      it('wrap_multiple', async () => {
         // mint an empty NFT
         const mintTx = await contract.mint(aeSdk.selectedAddress);
         console.log(`Gas used (mint): ${mintTx.result.gasUsed}`);
@@ -356,7 +356,7 @@ describe('AENSWrapping', () => {
         await expectNftMetadataMap(1, getExpectedNftMetadataMap(aensNamesLowercase));
       });
   
-      xit('unwrap_single', async () => {
+      it('unwrap_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -374,7 +374,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol([aensNames[0]], { owner: aeSdk.selectedAddress });
       });
   
-      xit('unwrap_multiple', async () => {
+      it('unwrap_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -391,7 +391,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
       });
   
-      xit('unwrap_all', async () => {
+      it('unwrap_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -408,7 +408,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { owner: aeSdk.selectedAddress });
       });
   
-      xit('transfer_single', async () => {
+      it('transfer_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -457,7 +457,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol([aensNames[0]], { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      xit('transfer_multiple', async () => {
+      it('transfer_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -513,7 +513,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      xit('transfer_all', async () => {
+      it('transfer_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -550,7 +550,7 @@ describe('AENSWrapping', () => {
         expectNameAttributesProtocol(aensNames, { owner: contractAccountAddress, ttl: expirationHeightNftTwo });
       });
 
-      xit('transfer (NFT)', async () => {
+      it('transfer (NFT)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
   
@@ -582,7 +582,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
 
-      xit('transfer_multiple_nfts', async () => {
+      it('transfer_multiple_nfts', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -623,7 +623,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(resolveNftIdAndOwnerTxDryRun.decodedResult, [1n, otherAccount.address]);
       });
 
-      xit('extend_all', async () => {
+      it('extend_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -654,7 +654,7 @@ describe('AENSWrapping', () => {
         await expectNameAttributesProtocol(aensNames, { ttl: expectedNewExpirationHeight });
       });
 
-      xit('set_global_config, set_nft_config, remove_nft_config & remove_global_config', async () => {
+      it('set_global_config, set_nft_config, remove_nft_config & remove_global_config', async () => {
         await contract.mint(aeSdk.selectedAddress);
 
         // pre config checks
@@ -709,7 +709,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(config, undefined);
       });
 
-      xit('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
+      it('deposit_to_reward_pool, withdraw_from_reward_pool & get_reward_pool', async () => {
         // check before deposit
         let rewardPool = (await contract.get_reward_pool(aeSdk.selectedAddress)).decodedResult;
         assert.equal(rewardPool, 0n);
@@ -737,7 +737,7 @@ describe('AENSWrapping', () => {
         assert.equal(rewardPool, 0n);
       });
 
-      xit('extend_all_for_reward (regular reward)', async () => {
+      it('extend_all_for_reward (regular reward)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -792,7 +792,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.reward);
       });
 
-      xit('extend_all_for_reward (emergency reward)', async () => {
+      it('extend_all_for_reward (emergency reward)', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -844,7 +844,7 @@ describe('AENSWrapping', () => {
         assert.equal(extendAllForRewardTx.decodedEvents[0].args[2], globalConfig.emergency_reward);
       });
 
-      xit('burn & burn_multiple_nfts', async () => {
+      it('burn & burn_multiple_nfts', async () => {
         // prepare: mint 3 different NFTs
         await contract.mint(aeSdk.selectedAddress);
         await contract.mint(aeSdk.selectedAddress);
@@ -898,7 +898,7 @@ describe('AENSWrapping', () => {
         // blocked by https://github.com/aeternity/aeproject/issues/470
       });
 
-      xit('revoke_single', async () => {
+      it('revoke_single', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -928,7 +928,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      xit('revoke_multiple', async () => {
+      it('revoke_multiple', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -962,7 +962,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      xit('revoke_all', async () => {
+      it('revoke_all', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -996,7 +996,7 @@ describe('AENSWrapping', () => {
         }
       });
 
-      xit('add_or_replace_pointer', async () => {
+      it('add_or_replace_pointer', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1031,7 +1031,7 @@ describe('AENSWrapping', () => {
         ]);
       });
 
-      xit('add_or_replace_pointers', async () => {
+      it('add_or_replace_pointers', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1102,7 +1102,7 @@ describe('AENSWrapping', () => {
         assert.sameDeepMembers(nameInstance.pointers, expectedReplacedPointers);
       });
 
-      xit('remove_pointer', async () => {
+      it('remove_pointer', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1127,7 +1127,7 @@ describe('AENSWrapping', () => {
         assert.deepEqual(nameInstance.pointers, []);
       });
 
-      xit('remove_pointers & remove_all_pointers', async () => {
+      it('remove_pointers & remove_all_pointers', async () => {
         // prepare: wrap names
         await contract.wrap_and_mint(namesDelegationSigs);
 
@@ -1187,17 +1187,17 @@ describe('AENSWrapping', () => {
           fileSystem: utils.getFilesystem("./contracts/test/DummyMigrationTarget.aes")
         });
         await dummyTargetContract.init(contractId);
-        // migrationTarget = (await contract.get_migration_target()).decodedResult;
-        // assert.equal(migrationTarget, dummyTargetContract.$options.address.replace("ct_", "ak_"));
+        migrationTarget = (await contract.get_migration_target()).decodedResult;
+        assert.equal(migrationTarget, dummyTargetContract.$options.address.replace("ct_", "ak_"));
 
-        // TODO perform an actual migration with the real contract (probably better suited in the ceres related tests)
+        // note: the actual migration is tested in aensWrappingTest-ceres.js
       });
     });
 
     describe('Abort paths', () => {
       const otherAccount = utils.getDefaultAccounts()[1];
 
-      xit('mint', async () => {
+      it('mint', async () => {
         await expect(
           contract.mint(otherAccount.address))
           .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_RECIPIENT"`);
@@ -1207,7 +1207,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "MINTING_WITH_METADATA_NOT_ALLOWED"`);
       });
 
-      xit('transfer', async () => {
+      it('transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1223,7 +1223,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "ONLY_OWNER_APPROVED_OR_OPERATOR_CALL_ALLOWED"`);
       });
 
-      xit('transfer_to_contract', async () => {
+      it('transfer_to_contract', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1231,7 +1231,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "CALLER_MUST_BE_A_CONTRACT"`);
       });
 
-      xit('burn', async () => {
+      it('burn', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1260,14 +1260,14 @@ describe('AENSWrapping', () => {
         await contract.burn(tokenIdToBurn, { onAccount: otherAccount });
       });
 
-      xit('wrap_and_mint', async () => {
+      it('wrap_and_mint', async () => {
         const namesDelegationWrongSigs = await getDelegationSignatures(aensNames, contractId, otherAccount);
         await expect(
           contract.wrap_and_mint(namesDelegationWrongSigs))
           .to.be.rejectedWith(`Invocation failed: "Error in aens_transfer: bad_signature"`);
       });
 
-      xit('wrap_single', async () => {
+      it('wrap_single', async () => {
         // workaround due to https://github.com/aeternity/aeproject/issues/470
         const contractLowTtl = await aeSdk.initializeContract({
           sourceCode: utils.getContractContent(AENS_WRAPPING_SOURCE),
@@ -1290,7 +1290,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "NAMES_IN_NFT_EXPIRED"`);
       });
 
-      xit('add_or_replace_pointer(s)', async () => {
+      it('add_or_replace_pointer(s)', async () => {
         let tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1308,7 +1308,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "POINTER_LIMIT_EXCEEDED"`);
       });
 
-      xit('transfer_single, transfer_multiple & transfer_all', async () => {
+      it('transfer_single, transfer_multiple & transfer_all', async () => {
         const sourceTokenId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
 
         await expect(
@@ -1352,13 +1352,13 @@ describe('AENSWrapping', () => {
         await contract.transfer_all(sourceTokenId, firstTargetNftId, aensNames.slice(1));
       });
 
-      xit('deposit_to_reward_pool', async () => {
+      it('deposit_to_reward_pool', async () => {
         await expect(
           contract.deposit_to_reward_pool())
           .to.be.rejectedWith(`Invocation failed: "DEPOSIT_VALUE_MISSING"`);
       });
 
-      xit('withdraw_from_reward_pool', async () => {
+      it('withdraw_from_reward_pool', async () => {
         await expect(
           contract.withdraw_from_reward_pool())
           .to.be.rejectedWith(`Invocation failed: "NO_AE_IN_REWARD_POOL"`);
@@ -1371,7 +1371,7 @@ describe('AENSWrapping', () => {
           .to.be.rejectedWith(`Invocation failed: "INSUFFICIENT_BALANCE_IN_POOL"`);
       });
 
-      xit('name wrapping & name transfer', async () => {
+      it('name wrapping & name transfer', async () => {
         const wrapSingleTestName = "wrapSingleTestName.chain";
         const preClaimTx = await aeSdk.aensPreclaim(wrapSingleTestName);
         await aeSdk.aensClaim(wrapSingleTestName, preClaimTx.salt);
@@ -1392,14 +1392,14 @@ describe('AENSWrapping', () => {
     });
 
     describe('NFT Receiver', () => {
-      xit('failed transfer', async () => {
+      it('failed transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
         await expect(
           contract.transfer(nftReceiverContractAddress, tokenId, "should fail"))
           .to.be.rejectedWith(`Invocation failed: "SAFE_TRANSFER_FAILED"`);
       });
 
-      xit('successful transfer', async () => {
+      it('successful transfer', async () => {
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await contract.transfer(nftReceiverContractAddress, tokenId);

@@ -538,7 +538,7 @@ main contract AENSWrappingCeres : IAEX141, IAENSWrappingCeres =
     stateful entrypoint burn_multiple_nfts(nft_ids: Set.set(int)) : unit =
         List.foreach(Set.to_list(nft_ids), (id) => __burn_single(id))
 
-    /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract and mints a new NFT in this contract
+    /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract (if set during deployment) and mints a new NFT in this contract
     /// @param nft_id the id of the NFT to migrate
     /// @return the id of the NFT minted in this contract
     stateful entrypoint trigger_migration(nft_id: int) : int =
