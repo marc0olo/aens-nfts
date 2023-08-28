@@ -8,12 +8,12 @@
     "test:ceres": "mocha ./test/aensWrappingTest-ceres.js --timeout 0 --exit"
   },
   "dependencies": {
-    "@aeternity/aepp-sdk": "github:aeternity/aepp-sdk-js#feature/ceres-vm-version",
+    "@aeternity/aepp-sdk": "github:aeternity/aepp-sdk-js#develop",
     "axios": "1.4.0",
     "dotenv": "16.3.1"
   },
   "devDependencies": {
-    "@aeternity/aeproject": "4.7.0",
+    "@aeternity/aeproject": "4.8.2",
     "chai": "4.3.7",
     "chai-as-promised": "7.1.1",
     "mocha": "10.2.0"

@@ -2,7 +2,7 @@ const chaiAsPromised = require('chai-as-promised');
 const { assert, expect, use } = require('chai');
 
 const { utils } = require('@aeternity/aeproject');
-const { AeSdk, CompilerHttp, Node, decode, encode, Encoding } = require('@aeternity/aepp-sdk');
+const { AeSdk, CompilerHttp, Node, decode } = require('@aeternity/aepp-sdk');
 
 use(chaiAsPromised);
 
@@ -142,15 +142,23 @@ describe('AENSWrapping', () => {
   let networkId;
 
   before(async () => {
-    aeSdkBeforeCeres = utils.getSdk();
+    aeSdkPreConfigured = utils.getSdk();
+
+    // rollback to first keyblock
+    await utils.rollbackHeight(aeSdkPreConfigured, 1);
+    // stupid but strange, opened an issue here: https://github.com/aeternity/aeproject/issues/493
+    assert.equal(await aeSdkPreConfigured.getHeight(), 2);
 
     // activate ceres
-    await utils.awaitKeyBlocks(aeSdkBeforeCeres, 6);
+    await utils.awaitKeyBlocks(aeSdkPreConfigured, 19);
+    assert.equal(await aeSdkPreConfigured.getHeight(), 21);
+    const nodeInfo = await aeSdkPreConfigured.getNodeInfo();
+    assert.equal(nodeInfo.consensusProtocolVersion, 6);
 
     aeSdk = new AeSdk({
       accounts: utils.getDefaultAccounts(),
       nodes: [{ name: 'node', instance: new Node("http://localhost:3001", { ignoreVersion: true }) }],
-      onCompiler: new CompilerHttp("http://localhost:3081"),
+      onCompiler: new CompilerHttp("http://localhost:3081"), // ceres compatible compiler
       interval: 50,
     });
 
@@ -183,14 +191,10 @@ describe('AENSWrapping', () => {
       await claimNames(aensNames);
     }
 
-    networkId = (await aeSdk.getNodeInfo()).nodeNetworkId;
-
     // get delegation sig for default account
     delegationSig = await getDelegationSignature(contractId);
-
-    // TODO waiting for feedback https://github.com/aeternity/aeternity/issues/4192
-    const sophia_msg = (await contract.provide_delegation_sig(delegationSig)).decodedResult;
-    console.log(`Sophia msg: ${sophia_msg}`);
+    // provide delegation signature for the default account
+    await contract.provide_delegation_sig(delegationSig);
 
     // create a snapshot of the blockchain state
     await utils.createSnapshot(aeSdk);
@@ -261,6 +265,7 @@ describe('AENSWrapping', () => {
     assert.deepEqual(metadataMap, expectedNftMetadataMap);
   }
 
+  // TODO replace with SDK function (https://github.com/aeternity/aepp-sdk-js/issues/1812)
   async function getDelegationSignature(contractId, onAccount = utils.getDefaultAccounts()[0]) {
     const payload = Buffer.concat([
                       Buffer.from(networkId),
@@ -268,7 +273,6 @@ describe('AENSWrapping', () => {
                       Buffer.from("AENS"),
                       decode(contractId),
                     ]);
-    console.log(`JS msg: ${payload.toString('hex')}`);
     return await aeSdk.sign(payload, { onAccount });
   }
 

@@ -1,8 +1,0 @@
-@compiler >= 6
-
-include "../interfaces/IAENSWrapping.aes"
-
-contract DummyMigrationTarget =
-
-    stateful entrypoint init(old_contract: IAENSWrapping) =
-        old_contract.activate_migration()
