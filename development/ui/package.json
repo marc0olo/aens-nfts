@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aeternity/aepp-sdk": "13.2.1",
+    "@vercel/analytics": "^1.0.2",
     "core-js": "3.31.1",
     "vue": "3.3.4",
     "vue-router": "4.2.4"
