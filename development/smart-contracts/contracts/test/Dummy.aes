@@ -1,5 +1,10 @@
 @compiler >= 6
 
+include "../interfaces/IAENSWrapping.aes"
+
 contract Dummy =
 
   entrypoint do_nothing() = ()
+
+  stateful entrypoint trigger_migration(old_contract: IAENSWrapping, nft_id: int) =
+    old_contract.migrate(nft_id)

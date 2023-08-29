@@ -156,7 +156,7 @@ describe('AENSWrapping', () => {
     aeSdk = utils.getSdk();
 
     // rollback to first keyblock
-    await utils.rollbackHeight(aeSdk, 1);
+    await utils.rollbackHeight(aeSdk, 0);
     // stupid but strange, opened an issue here: https://github.com/aeternity/aeproject/issues/493
     assert.equal(await aeSdk.getHeight(), 2);
 
@@ -176,7 +176,8 @@ describe('AENSWrapping', () => {
     contractAccountAddress = contractId.replace("ct_", "ak_");
 
     dummyContract = await aeSdk.initializeContract({
-      sourceCode: utils.getContractContent(DUMMY_SOURCE)
+      sourceCode: utils.getContractContent(DUMMY_SOURCE),
+      fileSystem: utils.getFilesystem(DUMMY_SOURCE)
     });
     await dummyContract.$deploy([]);
     dummyContractId = dummyContract.$options.address;
@@ -922,7 +923,6 @@ describe('AENSWrapping', () => {
         assert.deepEqual(ownedTokens, []);
 
         // TODO test burning with expired names
-        // blocked by https://github.com/aeternity/aeproject/issues/470
       });
 
       it('revoke_single', async () => {
@@ -1230,10 +1230,45 @@ describe('AENSWrapping', () => {
         let irisOwner = (await contract.owner(nftId)).decodedResult;
         assert.equal(irisOwner, aeSdk.selectedAddress);
 
+        const expectedTtl = (await contract.get_expiration_by_nft_id(nftId)).decodedResult;
+
         // migrate
         const triggerMigrationTx = await ceresContract.trigger_migration(nftId);
         console.log(`Gas used (trigger_migration with ${aensNames.length} names): ${triggerMigrationTx.result.gasUsed}`);
 
+        console.log(triggerMigrationTx.decodedEvents);
+
+        let eventCounter = 0;
+        for(eventCounter; eventCounter<aensNamesLowercase.length; eventCounter++) {
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].name, 'NameWrap');
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].contract.address, ceresContract.$options.address);
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[0], aensNamesLowercase[aensNamesLowercase.length-(eventCounter+1)]);
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[1], 1);
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[2], aeSdk.selectedAddress);
+          assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[3], expectedTtl);
+        }
+
+        // check Mint event (ceres contract)
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].name, 'Mint');
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].contract.address, ceresContract.$options.address);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[0], aeSdk.selectedAddress);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[1], 1);
+
+        eventCounter++;
+        // check Burn event (iris contract)
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].name, 'Burn');
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].contract.address, contractId);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[0], aeSdk.selectedAddress);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[1], 1);
+
+        eventCounter++;
+        // check Migrate event (iris contract)
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].name, 'Migrate');
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].contract.address, contractId);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[0], nftId);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[1], aensNames.length);
+        assert.equal(triggerMigrationTx.decodedEvents[eventCounter].args[2], aeSdk.selectedAddress);
+        
         // checks after migration
         const nftIdCeres = triggerMigrationTx.decodedResult;
         irisTotalSupply = (await contract.total_supply()).decodedResult;
@@ -1265,6 +1300,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer', async () => {
+        console.log(`Height: ${await aeSdk.getHeight()}`);
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1281,6 +1317,7 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_to_contract', async () => {
+        console.log(`Height: ${await aeSdk.getHeight()}`);
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1448,6 +1485,36 @@ describe('AENSWrapping', () => {
             .to.be.rejectedWith(`Invocation failed: "NAME_LIMIT_EXCEEDED"`);
         } else {
           console.log(`SKIPPED CHECK for "NAME_LIMIT_EXCEEDED`);
+        }
+      });
+
+      it('migration', async () => {
+        // create NFT in old contract
+        const nftId = (await contract.wrap_and_mint(namesDelegationSigs)).decodedResult;
+
+        await expect(
+          dummyContract.trigger_migration(contractId, nftId))
+          .to.be.rejectedWith(`Invocation failed: "MIGRATION_NOT_ACTIVATED_YET"`);
+
+        // deploy ceres contract (activates migration and uses a lower nameLimit)
+        const ceresContract = await aeSdkCeres.initializeContract({
+          sourceCode: utils.getContractContent("./contracts/AENSWrappingCeres.aes"),
+          fileSystem: utils.getFilesystem("./contracts/AENSWrappingCeres.aes")
+        });
+        await ceresContract.init("Wrapped AENS Ceres", "WAENSC", 180_000, nameLimit - 1, contractId);
+
+        await expect(
+          dummyContract.trigger_migration(contractId, nftId))
+          .to.be.rejectedWith(`Invocation failed: "MIGRATION_MUST_BE_TRIGGERED_BY_TARGET_CONTRACT"`);
+
+        await expect(
+          ceresContract.trigger_migration(nftId, { onAccount: utils.getDefaultAccounts()[1] }))
+          .to.be.rejectedWith(`Invocation failed: "ORIGIN_MUST_BE_OWNER"`);
+
+        if(aensNames.length == nameLimit) {
+          await expect(
+            ceresContract.trigger_migration(nftId))
+            .to.be.rejectedWith(`Invocation failed: "NAME_LIMIT_EXCEEDED"`);
         }
       });
     });

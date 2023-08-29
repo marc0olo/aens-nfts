@@ -1,4 +1,4 @@
-@compiler >= 7
+@compiler >= 8
 
 include "./interfaces/IAEX141.aes"
 include "./interfaces/IAEX141NFTReceiver.aes"

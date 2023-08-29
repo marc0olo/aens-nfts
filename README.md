@@ -133,8 +133,8 @@ Tests & artifacts:
 Tests & artifacts:
 
 * [aensWrappingTest-ceres.js](./development/smart-contracts/test/aensWrappingTest-ceres.js) (tests written in JavaScript using [AEproject](https://github.com/aeternity/aeproject))
-* [aci-ceres.json](./development/smart-contracts/generated_artifacts/aci-ceres.json) (contract interface generated via [generateBytecodeAndAci-ceres.js](./development/smart-contracts/scripts/generateBytecodeAndAci-ceres.js))
-* [bytecode-ceres](./development/smart-contracts/generated_artifacts/bytecode-ceres) (contract bytecode generated via [generateBytecodeAndAci-ceres.js](./development/smart-contracts/scripts/generateBytecodeAndAci-ceres.js))
+
+Note: Before generating the bytecode and aci for Ceres via [generateBytecodeAndAci-ceres.js](./development/smart-contracts/scripts/generateBytecodeAndAci-ceres.js), the official compiler v8 release should be set in the [docker-compose.yml](./development/smart-contracts/docker-compose.yml)!
 
 ## Sponsors
 
