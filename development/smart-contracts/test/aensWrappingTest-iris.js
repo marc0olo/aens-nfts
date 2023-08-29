@@ -1236,8 +1236,6 @@ describe('AENSWrapping', () => {
         const triggerMigrationTx = await ceresContract.trigger_migration(nftId);
         console.log(`Gas used (trigger_migration with ${aensNames.length} names): ${triggerMigrationTx.result.gasUsed}`);
 
-        console.log(triggerMigrationTx.decodedEvents);
-
         let eventCounter = 0;
         for(eventCounter; eventCounter<aensNamesLowercase.length; eventCounter++) {
           assert.equal(triggerMigrationTx.decodedEvents[eventCounter].name, 'NameWrap');
@@ -1300,7 +1298,6 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer', async () => {
-        console.log(`Height: ${await aeSdk.getHeight()}`);
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
@@ -1317,7 +1314,6 @@ describe('AENSWrapping', () => {
       });
 
       it('transfer_to_contract', async () => {
-        console.log(`Height: ${await aeSdk.getHeight()}`);
         const tokenId = (await contract.mint(aeSdk.selectedAddress)).decodedResult;
 
         await expect(
