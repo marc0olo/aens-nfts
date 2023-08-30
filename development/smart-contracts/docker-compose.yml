@@ -2,6 +2,7 @@ version: '3.6'
 services:
 
   aeproject_node:
+    #image: aeternity/aeternity:v6.11.0-bundle
     image: marc0olo/aeternity:verify_sig-devmode ## TODO replace with official bundle that has latest features
     hostname: node
     environment:
@@ -11,6 +12,7 @@ services:
       - './docker/accounts.json:/home/aeternity/node/data/aecore/.genesis/accounts_test.json'
 
   aeproject_compiler:
+    #image: aeternity/aesophia_http:v7.4.0
     image: aeternity/aesophia_http:v7.5.0
     hostname: compiler
     ports:
