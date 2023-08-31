@@ -11,6 +11,10 @@ if(!process.env.SECRET_KEY_DEPLOYER) {
     shutdown('SECRET_KEY_DEPLOYER');
 }
 
+if(!process.env.ADMIN) {
+    shutdown('ADMIN');
+}
+
 // run 'generateBytecodeAndAci.js' first
 const aci = require('../generated_artifacts/aci-iris.json');
 const bytecode = fs.readFileSync('../generated_artifacts/bytecode-iris', 'utf8');
@@ -34,7 +38,7 @@ const main = async () => {
         accounts: [new MemoryAccount(process.env.SECRET_KEY_DEPLOYER)],
     });
     const contract = await aeSdk.initializeContract({ aci, bytecode });
-    await contract.init("Wrapped AENS", "WAENS", 180_000, 100);
+    await contract.init("Wrapped AENS", "WAENS", 180_000, 50, process.env.ADMIN);
     console.log(`Deployed at: ${contract.$options.address}`);
 }
 
