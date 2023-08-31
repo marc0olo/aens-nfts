@@ -16,7 +16,10 @@
 
 <script>
 import { defineComponent, onMounted } from 'vue'
+import { inject } from '@vercel/analytics'
 import { initConnection } from './utils/aeternity/aeternity'
+
+inject()
 
 export default defineComponent({
   name: 'App',
