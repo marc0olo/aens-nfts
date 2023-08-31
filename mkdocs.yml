@@ -52,6 +52,5 @@ nav:
     - diagrams/extend_aens_names.md
     - diagrams/transfer_nfts.md
     - diagrams/burn_nfts.md
-  - diagrams/full-example-sequence.md
   - contract-interface.md
   - sponsors.md
