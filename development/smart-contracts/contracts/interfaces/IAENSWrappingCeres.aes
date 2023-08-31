@@ -1,52 +1,8 @@
-# Contract Interface
+include "../common/AENSWrappingTypes.aes"
 
-## IAEX141
+include "Set.aes"
 
-```sophia
-contract interface IAEX141 =
-    datatype metadata_type = URL | OBJECT_ID | MAP
-    datatype metadata = MetadataIdentifier(string) | MetadataMap(map(string, string))
-
-    record meta_info = 
-        { name: string
-        , symbol: string
-        , base_url: option(string)
-        , metadata_type : metadata_type }
-
-    datatype event
-        = Transfer(address, address, int)
-        | Approval(address, address, int, string)
-        | ApprovalForAll(address, address, string)
-        // extension "mintable"
-        | Mint(address, int)
-        // extension "burnable"
-        | Burn(address, int)
-
-    entrypoint aex141_extensions : () => list(string)
-    entrypoint meta_info : () => meta_info
-    entrypoint metadata : (int) => option(metadata)
-    entrypoint total_supply : () => int
-    entrypoint balance : (address) => option(int)
-    entrypoint owner : (int) => option(address)  
-    stateful entrypoint transfer : (address, int, option(string)) => unit
-    stateful entrypoint transfer_to_contract : (int) => unit
-    stateful entrypoint approve : (address, int, bool) => unit
-    stateful entrypoint approve_all : (address, bool) => unit
-    entrypoint get_approved : (int) => option(address)
-    entrypoint is_approved : (int, address) => bool
-    entrypoint is_approved_for_all : (address, address) => bool
-
-    // extension "mintable"
-    stateful entrypoint mint : (address, option(metadata), option(string)) => int
-
-    // extension "burnable"
-    stateful entrypoint burn : (int) => unit
-```
-
-## IAENSWrapping
-
-```sophia
-contract interface IAENSWrapping : IAEX141 =
+contract interface IAENSWrappingCeres =
 
     datatype event
         // name, nft_id, owner, new_ttl
@@ -61,32 +17,6 @@ contract interface IAENSWrapping : IAEX141 =
         | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
-        // authorized_deployer
-        | MigrationTargetDeployerSet(address)
-        | MigrationTargetDeployerUnset()
-        // ceres_contract_address
-        | MigrationActivation(address)
-        // nft_id, wrapped_names_count, owner
-        | Migrate(int, int, address)
-
-    record nft_data =
-        { id: int
-        , owner: address
-        , owner_config: option(config)
-        , names: list(string)
-        , expiration_height: int }
-
-    record config =
-        { reward: int
-        , reward_block_window: int
-        , emergency_reward: int
-        , emergency_reward_block_window: int
-        , can_receive_from_others: bool
-        , burnable_if_empty: bool }
-
-    record migration_data =
-        { names: list(string)
-        , expiration_height: Chain.ttl }
 
     /// @notice returns the account address of the real owner
     /// @param name the name to lookup
@@ -106,7 +36,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name
     /// @param nft_id the NFT id
     /// @return nft_data
-    entrypoint get_nft_data : (string) => option(nft_data)
+    entrypoint get_nft_data : (int) => option(AENSWrappingTypes.nft_data)
 
     /// @notice returns the expiration height of names that are wrapped into the provided nft id
     /// @param nft_id the NFT id
@@ -116,7 +46,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice returns the global config for an account
     /// @param account the account address to lookup the config for
     /// @return the global config for an account OR None if not set
-    entrypoint get_global_config : (address) => option(config)
+    entrypoint get_global_config : (address) => option(AENSWrappingTypes.config)
 
     /// @notice returns the balance included in the reward pool
     /// @param account the account where the reward pool balance should be looked up for
@@ -127,35 +57,41 @@ contract interface IAENSWrapping : IAEX141 =
     /// @return total_reward_distributed
     entrypoint get_total_reward_distributed : () => int
 
+    /// @notice provides delegation signature to let the contract manage all existing and future AENS names on behalf of the owner
+    /// @param delegation_sig the global delegation signature (network id + owner address + string "AENS" + Contract.address)
+    stateful entrypoint provide_delegation_sig : (signature) => unit
+
+    /// @notice removes the delegation signature
+    stateful entrypoint remove_delegation_sig : () => unit
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
+    /// @param names the set of AENS names to wrap
     /// @return the NFT id
-    stateful entrypoint wrap_and_mint : (map(string, signature)) => int
+    stateful entrypoint wrap_and_mint : (Set.set(string)) => int
 
     /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param name the AENS name to wrap
-    /// @param delegation_sig the delegation signature for the name
-    stateful entrypoint wrap_single : (int, string, signature) => unit
+    stateful entrypoint wrap_single : (int, string) => unit
 
     /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint wrap_multiple : (int, map(string, signature)) => unit
+    /// @param names the set of AENS names to wrap
+    stateful entrypoint wrap_multiple : (int, Set.set(string)) => unit
 
     /// @notice adds / replaces a pointer of the AENS name while keeping existing pointers
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param key the key of the pointer
     /// @param pt the object to point to (account, channel, contract, oracle)
-    stateful entrypoint add_or_replace_pointer : (int, string, string, AENS.pointee) => unit
+    stateful entrypoint add_or_replace_pointer : (int, string, string, AENSv2.pointee) => unit
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointers will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint add_or_replace_pointers : (int, string, map(string, AENS.pointee), bool) => unit
+    stateful entrypoint add_or_replace_pointers : (int, string, map(string, AENSv2.pointee), bool) => unit
 
     /// @notice removes a pointer of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -224,7 +160,7 @@ contract interface IAENSWrapping : IAEX141 =
 
     /// @notice caller sets global config for NFTs owned by the caller
     /// @param config the global config
-    stateful entrypoint set_global_config : (config) => unit
+    stateful entrypoint set_global_config : (AENSWrappingTypes.config) => unit
 
     /// @notice caller removes global config for NFTs owned by the caller
     stateful entrypoint remove_global_config : () => unit
@@ -232,7 +168,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @notice caller sets NFT specific config
     /// @param nft_id the id of the NFT to set the config
     /// @param config the nft specific config
-    stateful entrypoint set_nft_config : (int, config) => unit
+    stateful entrypoint set_nft_config : (int, AENSWrappingTypes.config) => unit
 
     /// @notice caller removes NFT specific config
     /// @param nft_id the id of the NFT to remove the config from
@@ -268,25 +204,7 @@ contract interface IAENSWrapping : IAEX141 =
     /// @param nft_ids the ids of the NFTs to burn
     stateful entrypoint burn_multiple_nfts : (Set.set(int)) => unit
 
-    /// @notice returns the address of the admin that can set the contract address of the future ceres contract to handle the migration
-    entrypoint get_admin : () => address
-
-    /// @notice returns the address of the admin OR an alternative address that can be defined by the admin for deployment of the target contract
-    entrypoint get_migration_target_deployer : () => address
-
-    /// @notice defines an address which will be authorized to deploy the contract that activates the migration
-    /// @param deployer the address that shall be authorized
-    stateful entrypoint set_migration_target_deployer : (address) => unit
-
-    /// @notice returns the address of the target ceres contract that users can use to perform a migration to
-    /// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet
-    entrypoint get_migration_target : () => option(address)
-
-    /// @notice activates the migration which can be triggered with an updated target contract after ceres protocol upgrade. entrypoint can only be called by the deployer address via deployment of the target contract
-    stateful entrypoint activate_migration : () => unit
-
-    /// @notice migrates & burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)
-    /// @param nft_id the id of the NFT to migrate & burn
-    /// @return the migration data that the ceres contract needs set the correct internal state
-    stateful entrypoint migrate : (int) => migration_data
-```
+    /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract (if set during deployment) and mints a new NFT in this contract
+    /// @param nft_id the id of the NFT to migrate
+    /// @return the id of the NFT minted in this contract
+    stateful entrypoint trigger_migration : (int) => int

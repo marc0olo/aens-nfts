@@ -1,8 +1,9 @@
-@compiler >= 7
+@compiler >= 8
 
 include "./interfaces/IAEX141.aes"
 include "./interfaces/IAEX141NFTReceiver.aes"
 include "./interfaces/IAENSWrapping.aes"
+include "./interfaces/IAENSWrappingCeres.aes"
 
 include "./common/AENSWrappingTypes.aes"
 
@@ -10,15 +11,17 @@ include "Option.aes"
 include "Pair.aes"
 include "String.aes"
 
-main contract AENSWrapping : IAEX141, IAENSWrapping =
+main contract AENSWrappingCeres : IAEX141, IAENSWrappingCeres =
 
     record state =
-        { meta_info: AEX141Types.meta_info
+        { old_contract: option(IAENSWrapping)
+        , meta_info: AEX141Types.meta_info
         , token_to_owner: map(int, address)
         , owner_to_tokens: map(address, Set.set(int))
         , name_to_token: map(string, int)
         , token_to_name_expiration: map(int, Chain.ttl)
         , token_to_config: map(int, AENSWrappingTypes.config)
+        , account_to_signature: map(address, signature)
         , account_to_config: map(address, AENSWrappingTypes.config)
         , account_to_reward_pool: map(address, int)
         , name_limit: int
@@ -29,10 +32,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         , operators: map(address, map(address, bool))
         , metadata: map(int, AEX141Types.metadata)
         , total_supply: int
-        , counter: int
-        , admin: address
-        , migration_target_deployer: option(address)
-        , migration_target_contract_address: option(address) }
+        , counter: int }
 
     datatype event
         = Transfer(address, address, int)
@@ -55,21 +55,18 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         | NameRevoke(string, int)
         // nft_id, caller, reward
         | Reward(int, address, int)
-        // authorized_deployer
-        | MigrationTargetDeployerSet(address)
-        | MigrationTargetDeployerUnset()
-        // ceres_contract_address
-        | MigrationActivation(address)
-        // nft_id, wrapped_names_count, owner
-        | Migrate(int, int, address)
 
-    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int, admin: address) : state =
-        { meta_info = { name = name, symbol = symbol, base_url = None, metadata_type = AEX141Types.MAP },
+    stateful entrypoint init(name: string, symbol: string, max_name_ttl: int, name_limit: int, old_contract: option(IAENSWrapping)) : state =
+        if(Option.is_some(old_contract))
+            Option.force(old_contract).activate_migration()
+        { old_contract = old_contract,
+          meta_info = { name = name, symbol = symbol, base_url = None, metadata_type = AEX141Types.MAP },
           token_to_owner = {},
           owner_to_tokens = {},
           name_to_token = {},
           token_to_name_expiration = {},
           token_to_config = {},
+          account_to_signature = {},
           account_to_config = {},
           account_to_reward_pool = {},
           name_limit = name_limit,
@@ -80,10 +77,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
           operators = {},
           metadata = {},
           total_supply = 0,
-          counter = 1,
-          admin = admin,
-          migration_target_deployer = None,
-          migration_target_contract_address = None }
+          counter = 1 }
 
     entrypoint aex141_extensions() : list(string) =
         ["mintable", "burnable"]
@@ -229,69 +223,82 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     entrypoint get_total_reward_distributed() : int =
         state.total_reward_distributed
 
+    /// @notice provides delegation signature to let the contract manage all existing and future AENS names on behalf of the owner
+    /// @param delegation_sig the global delegation signature (network id + owner address + string "AENS" + Contract.address)
+    stateful entrypoint provide_delegation_sig(delegation_sig: signature) : unit =
+        let expected : bytes() = Bytes.concat(
+            Bytes.concat(String.to_bytes(Chain.network_id), Address.to_bytes(Call.caller)),
+            Bytes.concat(String.to_bytes("AENS"), Address.to_bytes(Contract.address)))
+        require(Crypto.verify_sig(expected, Call.caller, delegation_sig), "INVALID_DELEGATION_SIGNATURE")
+        put(state{ account_to_signature[Call.caller] @sig = delegation_sig })
+
+    /// @notice removes the delegation signature
+    stateful entrypoint remove_delegation_sig() : unit =
+        put(state{ account_to_signature @ val = Map.delete(Call.caller, val) })
+
     /// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
+    /// @param names the set of AENS names to wrap
     /// @return the nft id
-    stateful entrypoint wrap_and_mint(names_delegation_sigs: map(string, signature)) : int =
-        require_name_limit_not_exceeded(0, Map.size(names_delegation_sigs))
+    stateful entrypoint wrap_and_mint(names: Set.set(string)) : int =
+        let delegation_sig = require_delegation_sig_provided()
+        require_name_limit_not_exceeded(0, Set.size(names))
         let nft_id = __mint(Call.caller, None)
-        let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
         let name_expiration_height = to_fixed_ttl(state.max_name_ttl)
-        List.foreach(names_delegation_sigs_list, (val) => __claim_and_assign(val, nft_id, name_expiration_height))
+        List.foreach(Set.to_list(names), (name) => __claim_and_assign(name, delegation_sig, nft_id, name_expiration_height))
         put(state{ token_to_name_expiration[nft_id] @name_expiration = FixedTTL(name_expiration_height) })
         nft_id
 
     /// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
     /// @param name the AENS name to wrap
-    /// @param delegation_sig the delegation signature for the name
-    stateful entrypoint wrap_single(nft_id: int, name: string, delegation_sig: signature) : unit =
+    stateful entrypoint wrap_single(nft_id: int, name: string) : unit =
+        let delegation_sig = require_delegation_sig_provided()
         require_authorized(nft_id)
         let expiration_height = require_not_expired(nft_id)
         require_name_limit_not_exceeded(get_wrap_count(nft_id), 1)
-        __claim_and_assign((name, delegation_sig), nft_id, expiration_height)
+        __claim_and_assign(name, delegation_sig, nft_id, expiration_height)
 
     /// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names
     /// @param nft_id the id of the NFT to wrap the AENS name into
-    /// @param names_delegation_sigs a map (key = AENS name, value = delegation signature)
-    stateful entrypoint wrap_multiple(nft_id: int, names_delegation_sigs: map(string, signature)) : unit =
-      require_authorized(nft_id)
-      let expiration_height = require_not_expired(nft_id)
-      require_name_limit_not_exceeded(get_wrap_count(nft_id), Map.size(names_delegation_sigs))
-      let names_delegation_sigs_list: list(string * signature) = Map.to_list(names_delegation_sigs)
-      List.foreach(names_delegation_sigs_list, (val) => __claim_and_assign(val, nft_id, expiration_height))
+    /// @param names the set of AENS names to wrap
+    stateful entrypoint wrap_multiple(nft_id: int, names: Set.set(string)) : unit =
+        let delegation_sig = require_delegation_sig_provided()
+        require_authorized(nft_id)
+        let expiration_height = require_not_expired(nft_id)
+        require_name_limit_not_exceeded(get_wrap_count(nft_id), Set.size(names))
+        List.foreach(Set.to_list(names), (name) => __claim_and_assign(name, delegation_sig, nft_id, expiration_height))
 
     /// @notice adds / replaces a pointer of the AENS name while keeping existing pointers
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param key the key of the pointer
     /// @param pt the object to point to (account, channel, contract, oracle)
-    stateful entrypoint add_or_replace_pointer(nft_id: int, name: string, key: string, pt: AENS.pointee) : unit =
+    stateful entrypoint add_or_replace_pointer(nft_id: int, name: string, key: string, pt: AENSv2.pointee) : unit =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
-        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+        let Some(AENSv2.Name(_, _, ptrs)) = AENSv2.lookup(name)
         let updated_pointers = ptrs{[key] = pt}
         require_matching_pointer_limit(updated_pointers)
-        AENS.update(Contract.address, name, None, None, Some(updated_pointers))
+        AENSv2.update(Contract.address, name, None, None, Some(updated_pointers))
 
     /// @notice adds / replaces a set of pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
     /// @param name the AENS name where the pointer will be added / replaced
     /// @param pointers a map of pointers to set
     /// @param keep_existing a bool indicating whether to keep existing pointers or not
-    stateful entrypoint add_or_replace_pointers(nft_id: int, name: string, pointers: map(string, AENS.pointee), keep_existing: bool) : unit =
+    stateful entrypoint add_or_replace_pointers(nft_id: int, name: string, pointers: map(string, AENSv2.pointee), keep_existing: bool) : unit =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
         if(keep_existing)
-            let Some(AENS.Name(_, _, old_ptrs)) = AENS.lookup(name)
+            let Some(AENSv2.Name(_, _, old_ptrs)) = AENSv2.lookup(name)
             let merged_ptrs = merge_maps(old_ptrs, pointers)
             require_matching_pointer_limit(merged_ptrs)
-            AENS.update(Contract.address, name, None, None, Some(pointers))
+            AENSv2.update(Contract.address, name, None, None, Some(pointers))
         else
             require_matching_pointer_limit(pointers)
-            AENS.update(Contract.address, name, None, None, Some(pointers))
+            AENSv2.update(Contract.address, name, None, None, Some(pointers))
 
     /// @notice removes a pointer of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -301,8 +308,8 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
-        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
-        AENS.update(Contract.address, name, None, None, Some(Map.delete(key, ptrs)))
+        let Some(AENSv2.Name(_, _, ptrs)) = AENSv2.lookup(name)
+        AENSv2.update(Contract.address, name, None, None, Some(Map.delete(key, ptrs)))
 
     /// @notice removes multiple pointers of the AENS name
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -312,9 +319,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
-        let Some(AENS.Name(_, _, ptrs)) = AENS.lookup(name)
+        let Some(AENSv2.Name(_, _, ptrs)) = AENSv2.lookup(name)
         let updated_ptrs = delete_keys(ptrs, keys)
-        AENS.update(Contract.address, name, None, None, Some(updated_ptrs))
+        AENSv2.update(Contract.address, name, None, None, Some(updated_ptrs))
 
 
     /// @notice removes all pointers of the AENS name
@@ -324,7 +331,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         require_authorized(nft_id)
         require_not_expired(nft_id)
         require_name_wrapped(nft_id, name)
-        AENS.update(Contract.address, name, None, None, Some({}))
+        AENSv2.update(Contract.address, name, None, None, Some({}))
 
     /// @notice revokes a single AENS name wrapped in the NFT, removes metadata
     /// @param nft_id the id of the NFT where the AENS name is wrapped into
@@ -494,7 +501,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         put(state{ token_to_name_expiration[nft_id] @name_expiration = FixedTTL(new_expiration_height) })
         put(state{ account_to_reward_pool[owner = 0] @reward_pool = reward_pool - reward })
         put(state{ total_reward_distributed = state.total_reward_distributed + reward })
-        if(reward > 0)
+        if(reward > 0)	
             Chain.spend(Call.caller, reward)
         Chain.event(Reward(nft_id, Call.caller, reward))
 
@@ -507,7 +514,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
 
     stateful function __revoke(nft_id: int, name: string) : unit =
         let nft_metadata_map = require_name_wrapped(nft_id, name)
-        AENS.revoke(Contract.address, name)
+        AENSv2.revoke(Contract.address, name)
         put(state{ metadata[nft_id] @nft_metadata = AEX141Types.MetadataMap(Map.delete(name, nft_metadata_map)) })
         put(state{ name_to_token @ val = Map.delete(name, val) })
         Chain.event(NameRevoke(name, nft_id))
@@ -531,61 +538,24 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     stateful entrypoint burn_multiple_nfts(nft_ids: Set.set(int)) : unit =
         List.foreach(Set.to_list(nft_ids), (id) => __burn_single(id))
 
-    /// @notice returns the address of the admin that can set the contract address of the future ceres contract to handle the migration
-    entrypoint get_admin() : address =
-        state.admin
+    /// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract (if set during deployment) and mints a new NFT in this contract
+    /// @param nft_id the id of the NFT to migrate
+    /// @return the id of the NFT minted in this contract
+    stateful entrypoint trigger_migration(nft_id: int) : int =
+        let old_contract = Option.force_msg(state.old_contract, "OLD_CONTRACT_NOT_CONFIGURED")
+        let migration_data = old_contract.migrate(nft_id)
+        require_name_limit_not_exceeded(0, List.length(migration_data.names))
+        let nft_id = __mint(Call.caller, None)
+        let nft_metadata = AEX141Types.MetadataMap(List.foldl(insert_key_only, {}, migration_data.names))
+        put(state{ metadata[nft_id] = nft_metadata })
+        put(state{ token_to_name_expiration[nft_id] = migration_data.expiration_height })
+        let FixedTTL(expiration_height) = migration_data.expiration_height
+        List.foreach(migration_data.names, (name) => __migrate(name, nft_id, expiration_height))
+        nft_id
 
-    /// @notice returns the address of the admin OR an alternative address that can be defined by the admin for deployment of the target contract
-    entrypoint get_migration_target_deployer() : address =
-        Option.default(state.admin, state.migration_target_deployer)
-
-    /// @notice defines an address which will be authorized to deploy the contract that activates the migration (can only be executed by admin)
-    /// @param deployer the address that shall be authorized or None to make the admin responsible for deployment of a target
-    stateful entrypoint set_migration_target_deployer(deployer: option(address)) : unit =
-        require(Call.caller == state.admin, "ONLY_ADMIN_CAN_SET_DEPLOYER")
-        put(state{ migration_target_deployer = deployer })
-        switch(deployer)
-            Some(v) =>
-                Chain.event(MigrationTargetDeployerSet(v))
-            None =>
-                Chain.event(MigrationTargetDeployerUnset)
-
-    /// @notice returns the address of the target ceres contract that users can use to perform a migration to
-    /// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet
-    entrypoint get_migration_target() : option(address) =
-        state.migration_target_contract_address
-
-    /// @notice activates the migration which can be triggered with an updated target contract after ceres protocol upgrade. entrypoint can only be called by the deployer address via deployment of the target contract
-    stateful entrypoint activate_migration() : unit =
-        require(Call.origin == get_migration_target_deployer(), "ORIGIN_MUST_BE_DEPLOYER")
-        require(Address.is_contract(Call.caller), "CALLER_MUST_BE_TARGET_CONTRACT")
-        put(state{ migration_target_contract_address = Some(Call.caller) })
-        Chain.event(MigrationActivation(Call.caller))
-
-    /// @notice migrates & burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)
-    /// @param nft_id the id of the NFT to migrate & burn
-    /// @return the migration data that the ceres contract needs set the correct internal state
-    stateful entrypoint migrate(nft_id: int) : AENSWrappingTypes.migration_data =
-        require(Option.is_some(state.migration_target_contract_address), "MIGRATION_NOT_ACTIVATED_YET")
-        require(Call.caller == Option.force(state.migration_target_contract_address), "MIGRATION_MUST_BE_TRIGGERED_BY_TARGET_CONTRACT")
-        let owner = require_exists(nft_id)
-        require(Call.origin == owner, "ORIGIN_MUST_BE_OWNER")
-        require_not_expired(nft_id)
-        let wrapped_names = require_names_wrapped(nft_id)
-        List.foreach(wrapped_names, (name) => __migrate(name))
-        __remove_approval(nft_id)
-        let migration_data = { names = wrapped_names,
-                               expiration_height = state.token_to_name_expiration[nft_id] }
-        put(state{ balances[owner] @balance = balance - 1
-            , total_supply = state.total_supply - 1
-            , token_to_owner = Map.delete(nft_id, state.token_to_owner)
-            , owner_to_tokens[owner] @owners_tokens = Set.delete(nft_id, owners_tokens)
-            , token_to_name_expiration = Map.delete(nft_id, state.token_to_name_expiration)
-            , token_to_config = Map.delete(nft_id, state.token_to_config)
-            , metadata = Map.delete(nft_id, state.metadata) })
-        Chain.event(Migrate(nft_id, List.length(wrapped_names), owner))
-        Chain.event(Burn(owner, nft_id))
-        migration_data
+    stateful function __migrate(name: string, nft_id: int, expiration_height: int) : unit =
+        put(state{ name_to_token[name] @t = nft_id })
+        Chain.event(NameWrap(name, nft_id, Call.caller, expiration_height))
 
     // external helpers for AEX-141
 
@@ -593,6 +563,9 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         Set.to_list(Map.lookup_default(owner, state.owner_to_tokens, Set.new()))
 
     // internal helper functions
+
+    function require_delegation_sig_provided() : signature =
+        Option.force_msg(Map.lookup(Call.caller, state.account_to_signature), "DELEGATION_SIGNATURE_MISSING")
 
     function require_name_limit_not_exceeded(current_wrap_count: int, to_wrap: int) : unit =
         require(current_wrap_count + to_wrap =< state.name_limit, "NAME_LIMIT_EXCEEDED")
@@ -602,7 +575,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
             None => () // allow burning if no config is set
             Some(cfg) => require(cfg.burnable_if_expired_or_empty, "BURNING_NOT_ALLOWED")
 
-    function require_matching_pointer_limit(pointers: map(string, AENS.pointee)) : unit =
+    function require_matching_pointer_limit(pointers: map(string, AENSv2.pointee)) : unit =
         require(Map.size(pointers) =< 32, "POINTER_LIMIT_EXCEEDED")
 
     function require_expired_if_wrapped(nft_id: int) : unit =
@@ -650,7 +623,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         owner
 
     stateful function __extend(nft_id: int, name: string, new_expiration_height: int) : unit =
-        AENS.update(Contract.address, name, Some(FixedTTL(new_expiration_height)), None, None)
+        AENSv2.update(Contract.address, name, Some(FixedTTL(new_expiration_height)), None, None)
         Chain.event(NameExtend(name, nft_id, new_expiration_height, Call.caller))
 
     stateful function __transfer_single_common(nft_id_old: int, nft_id_new: int, name: string, new_expiration_height: int) : unit =
@@ -673,16 +646,12 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         put(state{ metadata[nft_id] @nft_metadata = AEX141Types.MetadataMap(Map.delete(name, nft_metadata_map)) })
         put(state{ name_to_token @ val = Map.delete(name, val) })
         let new_owner = Option.default(current_owner, recipient)
-        AENS.transfer(Contract.address, new_owner, name)
+        AENSv2.transfer(Contract.address, new_owner, name)
         Chain.event(NameUnwrap(name, nft_id, current_owner, new_owner))
 
-    stateful function __migrate(name: string) : unit =
-        put(state{ name_to_token @ val = Map.delete(name, val) })
-        AENS.transfer(Contract.address, Option.force(state.migration_target_contract_address), name)
-
-    stateful function __claim_and_assign((name0, sig): string * signature, nft_id: int, expiration_height: int) : unit =
+    stateful function __claim_and_assign(name0: string, delegation_sig: signature, nft_id: int, expiration_height: int) : unit =
         let name = String.to_lower(name0)
-        AENS.transfer(Call.caller, Contract.address, name, signature = sig)
+        AENSv2.transfer(Call.caller, Contract.address, name, signature = delegation_sig)
         let AEX141Types.MetadataMap(nft_metadata_map) = Map.lookup_default(nft_id, state.metadata, AEX141Types.MetadataMap({}))
         // adding name to the AEX141Types.MetadataMap (value is irrelevant)
         let updated_map = nft_metadata_map{[name] @ n = ""}
@@ -695,7 +664,7 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
     /// @param name the name to update
     /// @param new_ttl the optional ttl to set
     stateful function __update_name_ttl(name: string, new_ttl: Chain.ttl) : unit =
-        AENS.update(Contract.address, name, Some(new_ttl), None, None)
+        AENSv2.update(Contract.address, name, Some(new_ttl), None, None)
 
     stateful function __mint(to: address, data: option(string)) : int =
         require_caller_is_receipient(to)
@@ -769,6 +738,10 @@ main contract AENSWrapping : IAEX141, IAENSWrapping =
         switch(v)
             true => "true"
             false => "false"
+
+    function insert_key_only(m: map('a, string), k: 'a) : map('a, string) =
+        m{[k] = ""}
+
 
     function merge_maps(old: map('a, 'b), new: map('a, 'b)) : map('a, 'b) =
         List.foldl(insert, old, Map.to_list(new))

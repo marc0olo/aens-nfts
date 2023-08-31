@@ -116,7 +116,7 @@ const connectToNode = async (selectedNetworkId) => {
 
 const initContract = async () => {
   const { aeSdk, contract, contractId } = toRefs(state)
-  const { default: aci } = await import('../../../../smart-contracts/generated_artifacts/aci.json');
+  const { default: aci } = await import('../../../../smart-contracts/generated_artifacts/aci-iris.json');
   contract.value = await aeSdk.value.initializeContract({ aci, address: process.env.VUE_APP_CONTRACT_ID })
   contractId.value = contract.value.$options.address
 }
