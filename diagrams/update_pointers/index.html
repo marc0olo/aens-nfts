@@ -504,8 +504,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -624,31 +624,31 @@
 <h2 id="add-a-single-pointer">Add a single pointer</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) addPointer: nft_id, name, pointer_key, pointer_object
+    NFT owner -&gt;&gt; NFT Contract: 1) add_or_replace_pointer: nft_id, name, pointer_key, pointer_object
     Note left of NFT Contract: keeps other existing pointers
-    Note left of NFT Contract: adds (replaces) a single pointer of the provided name</code></pre>
+    Note left of NFT Contract: adds or replaces a single pointer of the provided name</code></pre>
 <h2 id="add-a-set-of-pointers">Add a set of pointers</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) setPointers: nft_id, name, map(pointer_key, pointer_object), keepExisting
-    Note left of NFT Contract: keeps other existing pointers only if keepExisting=true
-    Note left of NFT Contract: sets (replaces) pointers of the provided name</code></pre>
+    NFT owner -&gt;&gt; NFT Contract: 1) add_or_replace_pointers: nft_id, name, map(pointer_key, pointer_object), keep_existing
+    Note left of NFT Contract: keeps other existing pointers only if keep_existing=true
+    Note left of NFT Contract: adds or replaces pointers of the provided name</code></pre>
 <h2 id="remove-a-single-pointer">Remove a single pointer</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) removePointer: nft_id, name, pointer_key
+    NFT owner -&gt;&gt; NFT Contract: 1) remove_pointer: nft_id, name, pointer_key
     Note left of NFT Contract: keeps other existing pointers
     Note left of NFT Contract: removes the provided pointer of the provided name</code></pre>
 <h2 id="remove-multiple-pointers">Remove multiple pointers</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) removePointers: nft_id, name, Set(pointer_key)
+    NFT owner -&gt;&gt; NFT Contract: 1) remove_pointers: nft_id, name, Set(pointer_key)
     Note left of NFT Contract: keeps other existing pointers
     Note left of NFT Contract: removes the provided pointers of the provided name</code></pre>
 <h2 id="remove-all-pointers">Remove all pointers</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) removeAllPointers: nft_id, name
+    NFT owner -&gt;&gt; NFT Contract: 1) remove_all_pointers: nft_id, name
     Note left of NFT Contract: removes the provided pointer of the provided name</code></pre>
 
 

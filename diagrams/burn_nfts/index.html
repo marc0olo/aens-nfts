@@ -12,7 +12,7 @@
         <link rel="prev" href="../transfer_nfts/">
       
       
-        <link rel="next" href="../full-example-sequence/">
+        <link rel="next" href="../../contract-interface/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.6">
@@ -483,8 +483,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -583,6 +583,7 @@
 <ul>
 <li>Burning NFTs is only possible if the wrapped AENS names are expired OR if the NFT is empty, meaning it does not wrap an AENS name</li>
 <li>The burn entrypoint is part of the AEX-141 standard and can be called by any user</li>
+<li>If the config of the NFT owner allows it, anybody can burn the NFT</li>
 </ul>
 <h2 id="single">Single</h2>
 <pre class="mermaid"><code>sequenceDiagram
@@ -594,7 +595,7 @@
 <h2 id="multiple">Multiple</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) burnMultipleNfts: Set(nft_id)
+    Any user -&gt;&gt; NFT Contract: 1) burn_multiple_nfts: Set(nft_id)
     Note left of NFT Contract: removes all data associated with the NFTs
     Note left of NFT Contract: burns the NFTs</code></pre>
 

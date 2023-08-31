@@ -490,8 +490,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -596,30 +596,29 @@
 <h2 id="single-name">Single name</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) transferSingle: nft_id_old, nft_id_new, name
+    NFT owner -&gt;&gt; NFT Contract: 1) transfer_single: nft_id_old, nft_id_new, name
     Note left of NFT Contract: requires caller to be owner of both NFTs
     Note left of NFT Contract: changes association of name from one NFT to another NFT
     Note left of NFT Contract: updates expiry of transferred name to match expiry of names in nft_id_new</code></pre>
 <h2 id="multiple-names">Multiple names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) transferMultiple: nft_id_old, nft_id_new, Set(names)
+    NFT owner -&gt;&gt; NFT Contract: 1) transfer_multiple: nft_id_old, nft_id_new, Set(names)
     Note left of NFT Contract: requires caller to be owner of both NFTs
     Note left of NFT Contract: changes association of names from one NFT to another NFT
     Note left of NFT Contract: updates expiry of transferred names to match expiry of names in nft_id_new</code></pre>
 <h2 id="all-names">All names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) transferAll: nft_id_old, nft_id_new
+    NFT owner -&gt;&gt; NFT Contract: 1) transfer_all: nft_id_old, nft_id_new
     Note left of NFT Contract: requires caller to be owner of both NFTs
     Note left of NFT Contract: changes association of name from one NFT to another NFT
     Note left of NFT Contract: updates expiry of transferred names to match expiry of names in nft_id_new
     Note left of NFT Contract: burns the old NFT</code></pre>
-<p><strong>Considerations</strong></p>
+<p><strong>Note:</strong></p>
 <ul>
-<li>Allow to transfer AENS names to NFTs owned by other accounts?<ul>
-<li>Users could define per NFT if they want to allow this</li>
-<li>By default this would not be allowed to prevent spamming NFTs with (unwanted) AENS names</li>
+<li>Users can define via config on a global or NFT specific level if they want to allow receiving AENS names from others<ul>
+<li>By default this is not allowed to prevent spamming NFTs with (unwanted) AENS names</li>
 </ul>
 </li>
 </ul>

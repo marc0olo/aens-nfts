@@ -490,8 +490,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -596,18 +596,17 @@
 <h2 id="single-name">Single name</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) unwrapSingle: nft_id, name, option(recipient)
+    NFT owner -&gt;&gt; NFT Contract: 1) unwrap_single: nft_id, name, option(recipient)
     NFT Contract --&gt;&gt; NFT owner: 1.1) transfer name</code></pre>
 <h2 id="multiple-names">Multiple names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) unwrapMultiple: nft_id, Set(names), option(recipient)
+    NFT owner -&gt;&gt; NFT Contract: 1) unwrap_multiple: nft_id, Set(names), option(recipient)
     NFT Contract --&gt;&gt; NFT owner: 1.1) transfer names</code></pre>
 <h2 id="all-names">All names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) unwrapAll: nft_id, option(recipient)
-    Note left of NFT Contract: burns the NFT
+    NFT owner -&gt;&gt; NFT Contract: 1) unwrap_all: nft_id, option(recipient)
     NFT Contract --&gt;&gt; NFT owner: 1.1) transfer names</code></pre>
 <p><strong>Note:</strong></p>
 <ul>

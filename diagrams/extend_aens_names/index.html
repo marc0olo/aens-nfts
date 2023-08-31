@@ -483,8 +483,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -582,12 +582,12 @@
 <h2 id="for-free">For free</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) extendAll: nft_id
+    Any user -&gt;&gt; NFT Contract: 1) extend_all: nft_id
     Note left of NFT Contract: extends all wrapped AENS names of the given NFT</code></pre>
 <h2 id="for-reward">For reward</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) extendAllForReward: nft_id
+    Any user -&gt;&gt; NFT Contract: 1) extend_all_for_reward: nft_id
     Note left of NFT Contract: extends all wrapped AENS names of the given NFT
     NFT Contract --&gt;&gt; Any user: 2) send AE
     Note left of NFT Contract: use amount of reward specified by NFT owner</code></pre>

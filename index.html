@@ -274,15 +274,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status-quo" class="md-nav__link">
-    Status Quo
+  <a href="#before-the-grant-status-quo" class="md-nav__link">
+    Before the grant (status quo)
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#outlook" class="md-nav__link">
-    Outlook
+  <a href="#after-the-grant-result-of-this-work" class="md-nav__link">
+    After the grant (result of this work)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simple-explainer" class="md-nav__link">
+    Simple explainer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-example-sequence" class="md-nav__link">
+    Full example sequence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sponsors" class="md-nav__link">
+    Sponsors
   </a>
   
 </li>
@@ -479,8 +500,8 @@
   
   
     <li class="md-nav__item">
-      <a href="diagrams/full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="diagrams/full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -543,15 +564,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#status-quo" class="md-nav__link">
-    Status Quo
+  <a href="#before-the-grant-status-quo" class="md-nav__link">
+    Before the grant (status quo)
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#outlook" class="md-nav__link">
-    Outlook
+  <a href="#after-the-grant-result-of-this-work" class="md-nav__link">
+    After the grant (result of this work)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simple-explainer" class="md-nav__link">
+    Simple explainer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-example-sequence" class="md-nav__link">
+    Full example sequence
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sponsors" class="md-nav__link">
+    Sponsors
   </a>
   
 </li>
@@ -576,19 +618,106 @@
 
 <h1 id="introduction">Introduction</h1>
 <p>The work in this repository is part of a <a href="https://forum.aeternity.com/t/active-wrapping-aens-names-into-aex-141-nfts">grant approved by the æternity crypto foundation</a>.</p>
-<h2 id="status-quo">Status Quo</h2>
+<h2 id="before-the-grant-status-quo">Before the grant (status quo)</h2>
 <ul>
 <li>No batch actions (updates, transfers) for AENS names are possible</li>
 <li>No trading of AENS names possible</li>
 <li>Users still suffer from name expiration as they fail to consistently track name expiration</li>
 </ul>
-<h2 id="outlook">Outlook</h2>
+<h2 id="after-the-grant-result-of-this-work">After the grant (result of this work)</h2>
 <p>Wrapping AENS names into NFTs will make it easy to perform batch-actions on the names and enable new use cases. NFT trading is also highly anticipated and is another topic to tackle in that regards.</p>
 <p>The results of the work in this grant will:</p>
 <ul>
 <li>provide a way for the community to better manage their AENS names</li>
 <li>enable batch-actions for AENS names</li>
 <li>allow strangers to extend AENS names and get rewarded for that</li>
+<li>make AENS names easily tradable on NFT marketplaces</li>
+</ul>
+<h2 id="simple-explainer">Simple explainer</h2>
+<p>By calling the entrypoint <code>wrap_and_mint</code>, users can wrap up to 50 AENS names (<code>name_limit</code> configured during deployment of the contract) into an NFT.</p>
+<p>The AENSWrapping contract syncs the expiration of all wrapped AENS names by extending all of them with the <code>max_name_ttl</code> (configured during deployment of the contract).</p>
+<p><img alt="alt text" src="images/aenswrapping-mint.png" /></p>
+<p>Every user can:</p>
+<ul>
+<li>create as many NFTs as they want and thus wrap as many AENS names as they want</li>
+<li>wrap/unwrap AENS names into/from existing NFTs that they own</li>
+<li>add or replace pointer(s) of a specific AENS name that is wrapped into an NFT that they own</li>
+<li>revoke AENS names that are wrapped into NFTs that they own</li>
+<li>transfer NFTs (and thus also the wrapped AENS names) to other users</li>
+<li>define a global config to define:<ul>
+<li>reward (incl. reward block window) for other users for extending their names</li>
+<li>emergency-reward (incl. emergency reward block window) for other users for extending their names</li>
+<li>if other users can transfer AENS names into NFTs that they own</li>
+<li>if other users can burn NFTs that they own in case they are empty</li>
+</ul>
+</li>
+<li>define a similar config for each NFT they own (overrrules the global config)</li>
+<li>deposit AE to the reward pool in order to reward other users for extending their names</li>
+<li>withdraw of AE from the reward pool</li>
+<li>extend all AENS names wrapped into a specific NFT (no matter if they own it or not) by calling:<ul>
+<li><code>extend_all</code> (no reward, good will)</li>
+<li><code>extend_all_for_reward</code> (rewards the user in case there is a reward configured, the reward block window is reached and the owner of the NFT has AE deposited to the reward pool)</li>
+</ul>
+</li>
+</ul>
+<h2 id="full-example-sequence">Full example sequence</h2>
+<pre class="mermaid"><code>sequenceDiagram
+    actor AENS / NFT owner
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 1) wrap_and_mint
+    Note left of AENSWrapping (NFT Contract): claims ownership of names&lt;br /&gt;mints NFT with id 1&lt;br /&gt;assigns names to NFT&lt;br /&gt;extends all AENS names
+    AENSWrapping (NFT Contract) --&gt;&gt; AENS / NFT owner: assign ownership of NFT with id 1
+
+    actor User XY
+
+    User XY -&gt;&gt; AENSWrapping (NFT Contract): 2) extend_all: nft_id (1)
+    Note right of AENSWrapping (NFT Contract): extends all AENS names wrapped in the given NFT&lt;br /&gt; user does not get any reward
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 3) set_global_config: config
+    Note left of AENSWrapping (NFT Contract): can enable global rewards for extending names&lt;br /&gt;in NFTs owned by the caller according to the config&lt;br /&gt;reward = 50 Æ&lt;br /&gt;reward_block_window = 480&lt;br /&gt;emergency_reward = 100 Æ&lt;br /&gt;emergency_reward_block_window = 10&lt;br /&gt;can_receive_from_others = false&lt;br /&gt;burnable_if_empty = false
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 4) deposit_to_reward_pool
+    AENS / NFT owner --&gt;&gt; AENSWrapping (NFT Contract): 500 Æ
+    Note left of AENSWrapping (NFT Contract): adds 500 Æ to reward pool of NFT owner
+
+    User XY -&gt;&gt; AENSWrapping (NFT Contract): 5) extend_all: nft_id (1)
+    Note right of AENSWrapping (NFT Contract): extends all AENS names wrapped in the given NFT&lt;br /&gt; user does not get any reward&lt;br /&gt; can be called anytime
+
+    User XY -&gt;&gt; AENSWrapping (NFT Contract): 6) extend_all_for_reward: nft_id (1)
+    AENSWrapping (NFT Contract) --&gt;&gt; User XY: 50 Æ
+    Note right of AENSWrapping (NFT Contract): extends all AENS names wrapped in the given NFT&lt;br /&gt; only rewards if called 480 blocks before the names expire
+    Note right of AENSWrapping (NFT Contract): deducts 50 Æ from reward pool of NFT owner&lt;br /&gt;new value: 450 Æ
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 7) wrap_and_mint
+    Note left of AENSWrapping (NFT Contract): claims ownership of names&lt;br /&gt;mints NFT with id 2&lt;br /&gt;assigns names to NFT&lt;br /&gt;extends all AENS names
+    AENSWrapping (NFT Contract) --&gt;&gt; AENS / NFT owner: assign ownership of NFT with id 2
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 8) set_nft_config: nft_id (2), config
+    Note left of AENSWrapping (NFT Contract): provide NFT specific config&lt;br /&gt;reward = 350 Æ&lt;br /&gt;reward_block_window = 2400&lt;br /&gt;emergency_reward = 500 Æ&lt;br /&gt;emergency_reward_block_window = 480&lt;br /&gt;can_receive_from_others = false&lt;br /&gt;burnable_if_empty = false
+
+    User XY -&gt;&gt; AENSWrapping (NFT Contract): 9) extend_all_for_reward: nft_id (2)
+    AENSWrapping (NFT Contract) --&gt;&gt; User XY: 450 Æ
+    Note right of AENSWrapping (NFT Contract): emergency reward within the 480 block before expiration
+    Note right of AENSWrapping (NFT Contract): deducts 450 Æ from reward pool of NFT owner&lt;br /&gt;new value: 0 Æ
+    Note right of AENSWrapping (NFT Contract): normally 500 Æ would have been paid, but only 450 are left in the reward pool of the NFT owner 
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 10) transfer_single: nft_id_old (1), nft_id_new (2), name
+    Note left of AENSWrapping (NFT Contract): associates provided name to nft with id 2&lt;br /&gt;updates expiry of transferred name to match expiry of names in NFT with id 2
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 11) add_or_replace_pointer: nft_id, name, pointer_key, pointer_object
+    Note left of AENSWrapping (NFT Contract): adds or replaces pointer for specific name wrapped in NFT
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 12) unwrap_all: nft_id (1), none
+    AENSWrapping (NFT Contract) --&gt;&gt; AENS / NFT owner: transfer of all AENS names wrapped in NFT with id 1
+
+    AENS / NFT owner -&gt;&gt; AENSWrapping (NFT Contract): 13) unwrap_all: nft_id (2), user xy
+    AENSWrapping (NFT Contract) --&gt;&gt; User XY: transfer of all AENS names wrapped in NFT with id 2</code></pre>
+<h2 id="sponsors">Sponsors</h2>
+<p>This work is sponsored by the <a href="https://www.aeternity-foundation.org">æternity crypto foundation</a>.</p>
+<p>Do you also wanna sponsor this work? Send some Æ coins to:</p>
+<ul>
+<li><code>buymeacoffee.chain</code> or</li>
+<li><code>ak_3mw4DAv1mbo8XbEjTgt8UgWTgGJoNmiRnvCywz4BD6192kHtm</code></li>
 </ul>
 
 

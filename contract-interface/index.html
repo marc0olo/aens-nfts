@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../diagrams/full-example-sequence/">
+        <link rel="prev" href="../diagrams/burn_nfts/">
       
       
         <link rel="next" href="../sponsors/">
@@ -433,8 +433,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../diagrams/full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../diagrams/full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -482,15 +482,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#aex-141" class="md-nav__link">
-    AEX-141
+  <a href="#iaex141" class="md-nav__link">
+    IAEX141
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#aens-wrapping" class="md-nav__link">
-    AENS Wrapping
+  <a href="#iaenswrapping" class="md-nav__link">
+    IAENSWrapping
   </a>
   
 </li>
@@ -545,15 +545,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#aex-141" class="md-nav__link">
-    AEX-141
+  <a href="#iaex141" class="md-nav__link">
+    IAEX141
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#aens-wrapping" class="md-nav__link">
-    AENS Wrapping
+  <a href="#iaenswrapping" class="md-nav__link">
+    IAENSWrapping
   </a>
   
 </li>
@@ -577,7 +577,7 @@
 
 
 <h1 id="contract-interface">Contract Interface</h1>
-<h2 id="aex-141">AEX-141</h2>
+<h2 id="iaex141">IAEX141</h2>
 <div class="highlight"><pre><span></span><code><span class="k">contract</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="nf">IAEX141</span><span class="w"> </span><span class="ow">=</span>
 <span class="w">    </span><span class="k">datatype</span><span class="w"> </span><span class="n">metadata_type</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="nf">URL</span><span class="w"> </span><span class="ow">|</span><span class="w"> </span><span class="nf">OBJECT_ID</span><span class="w"> </span><span class="ow">|</span><span class="w"> </span><span class="nf">MAP</span>
 <span class="w">    </span><span class="k">datatype</span><span class="w"> </span><span class="n">metadata</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="nf">MetadataIdentifier</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">|</span><span class="w"> </span><span class="nf">MetadataMap</span><span class="p">(</span><span class="kt">map</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">))</span>
@@ -617,7 +617,7 @@
 <span class="w">    </span><span class="c1">// extension &quot;burnable&quot;</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">burn</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 </code></pre></div>
-<h2 id="aens-wrapping">AENS Wrapping</h2>
+<h2 id="iaenswrapping">IAENSWrapping</h2>
 <div class="highlight"><pre><span></span><code><span class="k">contract</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="nf">IAENSWrapping</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="nf">IAEX141</span><span class="w"> </span><span class="ow">=</span>
 
 <span class="w">    </span><span class="k">datatype</span><span class="w"> </span><span class="kt">event</span>
@@ -633,6 +633,13 @@
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameRevoke</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
 <span class="w">        </span><span class="c1">// nft_id, caller, reward</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">Reward</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// authorized_deployer</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationTargetDeployerSet</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationTargetDeployerUnset</span><span class="p">()</span>
+<span class="w">        </span><span class="c1">// ceres_contract_address</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationActivation</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// nft_id, wrapped_names_count, owner</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">Migrate</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
 
 <span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">nft_data</span><span class="w"> </span><span class="ow">=</span>
 <span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
@@ -648,6 +655,10 @@
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward_block_window</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">can_receive_from_others</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span>
 <span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">burnable_if_empty</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">migration_data</span><span class="w"> </span><span class="ow">=</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">names</span><span class="ow">:</span><span class="w"> </span><span class="kt">list</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">expiration_height</span><span class="ow">:</span><span class="w"> </span><span class="nc">Chain</span><span class="p">.</span><span class="n">ttl</span><span class="w"> </span><span class="p">}</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the account address of the real owner</span>
 <span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
@@ -828,6 +839,28 @@
 <span class="w">    </span><span class="c1">/// @notice burns a set of NFTs (only possible if AENS names are expired)</span>
 <span class="w">    </span><span class="c1">/// @param nft_ids the ids of the NFTs to burn</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">burn_multiple_nfts</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the address of the admin that can set the contract address of the future ceres contract to handle the migration</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_admin</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">address</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the address of the admin OR an alternative address that can be defined by the admin for deployment of the target contract</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_migration_target_deployer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">address</span>
+
+<span class="w">    </span><span class="c1">/// @notice defines an address which will be authorized to deploy the contract that activates the migration</span>
+<span class="w">    </span><span class="c1">/// @param deployer the address that shall be authorized</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_migration_target_deployer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the address of the target ceres contract that users can use to perform a migration to</span>
+<span class="w">    </span><span class="c1">/// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_migration_target</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice activates the migration which can be triggered with an updated target contract after ceres protocol upgrade. entrypoint can only be called by the deployer address via deployment of the target contract</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">activate_migration</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice migrates &amp; burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to migrate &amp; burn</span>
+<span class="w">    </span><span class="c1">/// @return the migration data that the ceres contract needs set the correct internal state</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">migrate</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="n">migration_data</span>
 </code></pre></div>
 
 

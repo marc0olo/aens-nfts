@@ -490,8 +490,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -596,7 +596,7 @@
 <h2 id="single-name">Single name</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) revokeSingle: nft_id, name
+    NFT owner -&gt;&gt; NFT Contract: 1) revoke_single: nft_id, name
     Note left of NFT Contract: revokes AENS name wrapped in the NFT
     Note left of NFT Contract: removes association of name to NFT</code></pre>
 <p><strong>Considerations</strong></p>
@@ -606,7 +606,7 @@
 <h2 id="multiple-names">Multiple names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) revokeMultiple: nft_id, Set(names)
+    NFT owner -&gt;&gt; NFT Contract: 1) revoke_multiple: nft_id, Set(names)
     Note left of NFT Contract: revokes AENS names wrapped in the NFT
     Note left of NFT Contract: removes association of names to NFT</code></pre>
 <p><strong>Considerations</strong></p>
@@ -616,7 +616,7 @@
 <h2 id="all-names">All names</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) revokeAll: nft_id
+    NFT owner -&gt;&gt; NFT Contract: 1) revoke_all: nft_id
     Note left of NFT Contract: revokes AENS names wrapped in the NFT
     Note left of NFT Contract: burns the NFT and removes all data associated to it</code></pre>
 

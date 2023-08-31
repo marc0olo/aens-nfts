@@ -339,6 +339,19 @@
     Wrap names by minting a new NFT
   </a>
   
+    <nav class="md-nav" aria-label="Wrap names by minting a new NFT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iris-protocol-limitation" class="md-nav__link">
+    Iris protocol limitation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -490,8 +503,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -558,6 +571,19 @@
     Wrap names by minting a new NFT
   </a>
   
+    <nav class="md-nav" aria-label="Wrap names by minting a new NFT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iris-protocol-limitation" class="md-nav__link">
+    Iris protocol limitation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -596,30 +622,30 @@
 <h2 id="wrap-names-by-minting-a-new-nft">Wrap names by minting a new NFT</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor AENS owner
-    AENS owner -&gt;&gt; NFT Contract: 1) wrapAndMint: map(name, delegation_signature)
+    AENS owner -&gt;&gt; NFT Contract: 1) wrap_and_mint: map(name, delegation_signature)
     Note left of NFT Contract: claims ownership of names
     Note left of NFT Contract: mints NFT
     Note left of NFT Contract: assigns names to NFT
     Note left of NFT Contract: extends all names
     NFT Contract --&gt;&gt; AENS owner: 1.1) assign ownership of NFT</code></pre>
-<p><strong>Considerations</strong></p>
+<h3 id="iris-protocol-limitation">Iris protocol limitation</h3>
 <ul>
 <li>Delegation signature needs to be created in advance for each AENS name.<ul>
-<li>In the future it will be possible to give a contract permission to handle all AENS names owned by an account, see: <a href="https://github.com/aeternity/aeternity/issues/4080">https://github.com/aeternity/aeternity/issues/4080</a></li>
+<li>With the future Ceres protocol upgrade, it will be possible to give a contract permission to handle all AENS names owned by an account, see: <a href="https://github.com/aeternity/aeternity/issues/4080">https://github.com/aeternity/aeternity/issues/4080</a></li>
 </ul>
 </li>
 </ul>
 <h2 id="wrap-name-into-existing-nft">Wrap name into existing NFT</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor AENS owner
-    AENS owner -&gt;&gt; NFT Contract: 1) wrapSingle: nft_id, name, delegation_signature
+    AENS owner -&gt;&gt; NFT Contract: 1) wrap_single: nft_id, name, delegation_signature
     Note left of NFT Contract: claims ownership of name
     Note left of NFT Contract: assigns name to NFT
     Note left of NFT Contract: updates expiry of name to wrap to match expiry of names in nft_id</code></pre>
 <h2 id="wrap-multiple-names-into-existing-nft">Wrap multiple names into existing NFT</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor AENS owner
-    AENS owner -&gt;&gt; NFT Contract: 1) wrapMultiple: nft_id, map(name, delegation_signature)
+    AENS owner -&gt;&gt; NFT Contract: 1) wrap_multiple: nft_id, map(name, delegation_signature)
     Note left of NFT Contract: claims ownership of names
     Note left of NFT Contract: assigns names to NFT
     Note left of NFT Contract: updates expiry of names to wrap to match expiry of names in nft_id</code></pre>

@@ -412,22 +412,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-global-reward-config" class="md-nav__link">
-    Set global reward config
+  <a href="#set-global-config" class="md-nav__link">
+    Set global config
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-global-reward-config" class="md-nav__link">
-    Remove global reward config
+  <a href="#remove-global-config" class="md-nav__link">
+    Remove global config
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-nft-specific-reward-config" class="md-nav__link">
-    Set NFT specific reward config
+  <a href="#set-nft-specific-config" class="md-nav__link">
+    Set NFT specific config
   </a>
   
 </li>
@@ -518,8 +518,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../full-example-sequence/" class="md-nav__link">
-        Full example sequence
+      <a href="../full-example-sequence.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -589,22 +589,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-global-reward-config" class="md-nav__link">
-    Set global reward config
+  <a href="#set-global-config" class="md-nav__link">
+    Set global config
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#remove-global-reward-config" class="md-nav__link">
-    Remove global reward config
+  <a href="#remove-global-config" class="md-nav__link">
+    Remove global config
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-nft-specific-reward-config" class="md-nav__link">
-    Set NFT specific reward config
+  <a href="#set-nft-specific-config" class="md-nav__link">
+    Set NFT specific config
   </a>
   
 </li>
@@ -651,51 +651,52 @@
 <h1 id="reward-users-for-extending-names">Reward users for extending names</h1>
 <p>By default, rewarding users for extending names wrapped in NFTs will not be activated.</p>
 <p>For rewarding, we distinguish between a global reward config and an NFT specific reward config. This allows users to provide higher rewards for specific NFTs that contain AENS names which they consider more valuable than others and vice versa.</p>
-<p>The global reward-config is defined by an account and will be applied on all NFTs this account owns.</p>
-<p>NFT specific reward-config always overrules the global reward-config.</p>
+<p>The global config is defined by an account and will be applied on all NFTs this account owns.</p>
+<p>NFT specific config always overrules the global reward-config.</p>
 <p>When an NFT is transferred to another account, the NFT specific reward-config will be removed.</p>
 <h2 id="config">Config</h2>
 <ul>
-<li><code>reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the regular <code>block_window</code></li>
-<li><code>block_window</code> the window (in keyblocks) before name expiration where the defined <code>reward</code> is paid</li>
-<li><code>emergency_reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the <code>emergency_block_window</code></li>
-<li><code>emergency_block_window</code> the window (in keyblocks) before name expiration where the defined <code>emergency_reward</code> is paid</li>
+<li><code>reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the regular <code>reward_block_window</code></li>
+<li><code>reward_block_window</code> the window (in keyblocks) before name expiration where the defined <code>reward</code> is paid</li>
+<li><code>emergency_reward</code> the amount of Æ (in ættos) to be distributed, if a user extends names wrapped in an NFT in the <code>emergency_reward_block_window</code></li>
+<li><code>emergency_reward_block_window</code> the window (in keyblocks) before name expiration where the defined <code>emergency_reward</code> is paid</li>
 <li><code>can_receive_from_others</code> defines if a users allows his NFTs to receive and wrap AENS names from others</li>
+<li><code>burnable_if_empty</code></li>
 </ul>
 <p><strong>Note</strong></p>
 <ul>
-<li><code>option(estimated_reward)</code> will be calculated based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner</li>
+<li><code>estimate_reward</code> entrypoint calculates the reward based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner</li>
 <li>in case the deposited Æ amount of the NFT owner is lower than <code>reward</code> or <code>emergency_reward</code>, the remaining Æ are returned</li>
 </ul>
-<h2 id="set-global-reward-config">Set global reward config</h2>
+<h2 id="set-global-config">Set global config</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) setGlobalConfig: reward_config
+    Any user -&gt;&gt; NFT Contract: 1) set_global_config: config
     Note left of NFT Contract: activates rewarding based on provided config</code></pre>
-<h2 id="remove-global-reward-config">Remove global reward config</h2>
+<h2 id="remove-global-config">Remove global config</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) removeGlobalConfig
+    Any user -&gt;&gt; NFT Contract: 1) remove_global_config
     Note left of NFT Contract: deactivates rewarding by removing the config</code></pre>
-<h2 id="set-nft-specific-reward-config">Set NFT specific reward config</h2>
+<h2 id="set-nft-specific-config">Set NFT specific config</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) setNftConfig: nft_id, reward_config
+    NFT owner -&gt;&gt; NFT Contract: 1) set_nft_config: nft_id, config
     Note left of NFT Contract: activates NFT specific config</code></pre>
 <h2 id="remove-nft-specific-reward-config">Remove NFT specific reward config</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor NFT owner
-    NFT owner -&gt;&gt; NFT Contract: 1) removeNftConfig: nft_id
+    NFT owner -&gt;&gt; NFT Contract: 1) remove_nft_config: nft_id
     Note left of NFT Contract: deactivates NFT specific config</code></pre>
 <h2 id="deposit-to-reward-pool">Deposit to reward pool</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) depositToRewardPool
+    Any user -&gt;&gt; NFT Contract: 1) deposit_to_reward_pool
     Note left of NFT Contract: adds the amount of ættos sent to the reward pool of an account</code></pre>
 <h2 id="withdraw-reward-balance">Withdraw reward balance</h2>
 <pre class="mermaid"><code>sequenceDiagram
     actor Any user
-    Any user -&gt;&gt; NFT Contract: 1) withdrawFromRewardPool: option(amount)
+    Any user -&gt;&gt; NFT Contract: 1) withdraw_from_reward_pool: option(amount)
     Note left of NFT Contract: removes the provided amount (ættios) from the reward pool of an account
     Note left of NFT Contract: if no amount is provided, the complete balance in reward pool will be withdrawn</code></pre>
 
