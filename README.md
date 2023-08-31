@@ -19,7 +19,7 @@ The results of the work in this grant will:
 * make AENS names easily tradable on NFT marketplaces
 
 ## Simple explainer
-By calling the entrypoint `wrap_and_mint`, users can wrap up to 100 AENS names (`name_limit` configured during deployment of the contract) into an NFT.
+By calling the entrypoint `wrap_and_mint`, users can wrap up to 50 AENS names (`name_limit` configured during deployment of the contract) into an NFT.
 
 The AENSWrapping contract syncs the expiration of all wrapped AENS names by extending all of them with the `max_name_ttl` (configured during deployment of the contract).
 
