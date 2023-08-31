@@ -431,21 +431,6 @@
 
   
   
-  
-    <li class="md-nav__item">
-      <a href="../diagrams/full-example-sequence.md" class="md-nav__link">
-        None
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
     
   
   
@@ -491,6 +476,13 @@
         <li class="md-nav__item">
   <a href="#iaenswrapping" class="md-nav__link">
     IAENSWrapping
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iaenswrappingceres" class="md-nav__link">
+    IAENSWrappingCeres
   </a>
   
 </li>
@@ -558,6 +550,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#iaenswrappingceres" class="md-nav__link">
+    IAENSWrappingCeres
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -618,7 +617,7 @@
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">burn</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 </code></pre></div>
 <h2 id="iaenswrapping">IAENSWrapping</h2>
-<div class="highlight"><pre><span></span><code><span class="k">contract</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="nf">IAENSWrapping</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="nf">IAEX141</span><span class="w"> </span><span class="ow">=</span>
+<div class="highlight"><pre><span></span><code><span class="k">contract</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="nf">IAENSWrapping</span><span class="w"> </span><span class="ow">=</span>
 
 <span class="w">    </span><span class="k">datatype</span><span class="w"> </span><span class="kt">event</span>
 <span class="w">        </span><span class="c1">// name, nft_id, owner, new_ttl</span>
@@ -633,32 +632,13 @@
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameRevoke</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
 <span class="w">        </span><span class="c1">// nft_id, caller, reward</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">Reward</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
-<span class="w">        </span><span class="c1">// authorized_deployer</span>
+<span class="w">            </span><span class="c1">// authorized_deployer</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationTargetDeployerSet</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationTargetDeployerUnset</span><span class="p">()</span>
 <span class="w">        </span><span class="c1">// ceres_contract_address</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">MigrationActivation</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
 <span class="w">        </span><span class="c1">// nft_id, wrapped_names_count, owner</span>
 <span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">Migrate</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
-
-<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">nft_data</span><span class="w"> </span><span class="ow">=</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">owner</span><span class="ow">:</span><span class="w"> </span><span class="kt">address</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">owner_config</span><span class="ow">:</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">names</span><span class="ow">:</span><span class="w"> </span><span class="kt">list</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">expiration_height</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">}</span>
-
-<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="ow">=</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">reward</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">reward_block_window</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">emergency_reward_block_window</span><span class="ow">:</span><span class="w"> </span><span class="kt">int</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">can_receive_from_others</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">burnable_if_empty</span><span class="ow">:</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">}</span>
-
-<span class="w">    </span><span class="k">record</span><span class="w"> </span><span class="n">migration_data</span><span class="w"> </span><span class="ow">=</span>
-<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="n">names</span><span class="ow">:</span><span class="w"> </span><span class="kt">list</span><span class="p">(</span><span class="kt">string</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">expiration_height</span><span class="ow">:</span><span class="w"> </span><span class="nc">Chain</span><span class="p">.</span><span class="n">ttl</span><span class="w"> </span><span class="p">}</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the account address of the real owner</span>
 <span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
@@ -678,7 +658,7 @@
 <span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the NFT id</span>
 <span class="w">    </span><span class="c1">/// @return nft_data</span>
-<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_nft_data</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="n">nft_data</span><span class="p">)</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_nft_data</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">nft_data</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the expiration height of names that are wrapped into the provided nft id</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the NFT id</span>
@@ -688,7 +668,7 @@
 <span class="w">    </span><span class="c1">/// @notice returns the global config for an account</span>
 <span class="w">    </span><span class="c1">/// @param account the account address to lookup the config for</span>
 <span class="w">    </span><span class="c1">/// @return the global config for an account OR None if not set</span>
-<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the balance included in the reward pool</span>
 <span class="w">    </span><span class="c1">/// @param account the account where the reward pool balance should be looked up for</span>
@@ -796,7 +776,7 @@
 
 <span class="w">    </span><span class="c1">/// @notice caller sets global config for NFTs owned by the caller</span>
 <span class="w">    </span><span class="c1">/// @param config the global config</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
 <span class="w">    </span><span class="c1">/// @notice caller removes global config for NFTs owned by the caller</span>
 <span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
@@ -804,7 +784,7 @@
 <span class="w">    </span><span class="c1">/// @notice caller sets NFT specific config</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to set the config</span>
 <span class="w">    </span><span class="c1">/// @param config the nft specific config</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_nft_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_nft_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
 <span class="w">    </span><span class="c1">/// @notice caller removes NFT specific config</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to remove the config from</span>
@@ -848,7 +828,7 @@
 
 <span class="w">    </span><span class="c1">/// @notice defines an address which will be authorized to deploy the contract that activates the migration</span>
 <span class="w">    </span><span class="c1">/// @param deployer the address that shall be authorized</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_migration_target_deployer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_migration_target_deployer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
 
 <span class="w">    </span><span class="c1">/// @notice returns the address of the target ceres contract that users can use to perform a migration to</span>
 <span class="w">    </span><span class="c1">/// @return the address of the target ceres contract that is allowed to trigger an NFT migration OR None if migration is not activated yet</span>
@@ -860,7 +840,215 @@
 <span class="w">    </span><span class="c1">/// @notice migrates &amp; burns an NFT from this contract to the ceres contract (can only be executed by the NFT owner via an entrypoint in the ceres contract)</span>
 <span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to migrate &amp; burn</span>
 <span class="w">    </span><span class="c1">/// @return the migration data that the ceres contract needs set the correct internal state</span>
-<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">migrate</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="n">migration_data</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">migrate</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">migration_data</span>
+</code></pre></div>
+<h2 id="iaenswrappingceres">IAENSWrappingCeres</h2>
+<div class="highlight"><pre><span></span><code><span class="k">contract</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="nf">IAENSWrappingCeres</span><span class="w"> </span><span class="ow">=</span>
+
+<span class="w">    </span><span class="k">datatype</span><span class="w"> </span><span class="kt">event</span>
+<span class="w">        </span><span class="c1">// name, nft_id, owner, new_ttl</span>
+<span class="w">        </span><span class="ow">=</span><span class="w"> </span><span class="nf">NameWrap</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// name, nft_id, current_owner, recipient</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameUnwrap</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// name, nft_id, new_ttl, caller</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameExtend</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// name, nft_id_old, nft_id_new</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameTransfer</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// name, nft_id</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">NameRevoke</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
+<span class="w">        </span><span class="c1">// nft_id, caller, reward</span>
+<span class="w">        </span><span class="ow">|</span><span class="w"> </span><span class="nf">Reward</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the account address of the real owner</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return real owner</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_owner</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return nft_id</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_nft_id</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name</span>
+<span class="w">    </span><span class="c1">/// @param name the name to lookup</span>
+<span class="w">    </span><span class="c1">/// @return nft_id and owner</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">resolve_nft_id_and_owner</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="ow">*</span><span class="w"> </span><span class="kt">address</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the nft id where the AENS name is wrapped into as well as the real owner of the name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the NFT id</span>
+<span class="w">    </span><span class="c1">/// @return nft_data</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_nft_data</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">nft_data</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the expiration height of names that are wrapped into the provided nft id</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the NFT id</span>
+<span class="w">    </span><span class="c1">/// @return the (fixed) height where all names wrapped into the nft will expire</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_expiration_by_nft_id</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the global config for an account</span>
+<span class="w">    </span><span class="c1">/// @param account the account address to lookup the config for</span>
+<span class="w">    </span><span class="c1">/// @return the global config for an account OR None if not set</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the balance included in the reward pool</span>
+<span class="w">    </span><span class="c1">/// @param account the account where the reward pool balance should be looked up for</span>
+<span class="w">    </span><span class="c1">/// @return the reward pool balance</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
+<span class="w">    </span><span class="c1">/// @notice returns the total reward that has been distributed for extending names with this contract</span>
+<span class="w">    </span><span class="c1">/// @return total_reward_distributed</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">get_total_reward_distributed</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
+<span class="w">    </span><span class="c1">/// @notice provides delegation signature to let the contract manage all existing and future AENS names on behalf of the owner</span>
+<span class="w">    </span><span class="c1">/// @param delegation_sig the global delegation signature (network id + owner address + string &quot;AENS&quot; + Contract.address)</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">provide_delegation_sig</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">signature</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice removes the delegation signature</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_delegation_sig</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice wraps AENS names into a fresh minted NFT, adds NFT metadata, extends all names</span>
+<span class="w">    </span><span class="c1">/// @param names the set of AENS names to wrap</span>
+<span class="w">    </span><span class="c1">/// @return the NFT id</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrap_and_mint</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
+<span class="w">    </span><span class="c1">/// @notice wraps a single AENS name into an existing NFT, adds NFT metadata, updates expiry of name to match expiry of already wrapped names</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to wrap the AENS name into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name to wrap</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrap_single</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice wraps multiple AENS names into an existing NFT, adds NFT metadata, updates expiry of names to match expiry of already wrapped names</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to wrap the AENS name into</span>
+<span class="w">    </span><span class="c1">/// @param names the set of AENS names to wrap</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">wrap_multiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice adds / replaces a pointer of the AENS name while keeping existing pointers</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name where the pointer will be added / replaced</span>
+<span class="w">    </span><span class="c1">/// @param key the key of the pointer</span>
+<span class="w">    </span><span class="c1">/// @param pt the object to point to (account, channel, contract, oracle)</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">add_or_replace_pointer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nc">AENSv2</span><span class="p">.</span><span class="n">pointee</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice adds / replaces a set of pointers of the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name where the pointers will be added / replaced</span>
+<span class="w">    </span><span class="c1">/// @param pointers a map of pointers to set</span>
+<span class="w">    </span><span class="c1">/// @param keep_existing a bool indicating whether to keep existing pointers or not</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">add_or_replace_pointers</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">map</span><span class="p">(</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nc">AENSv2</span><span class="p">.</span><span class="n">pointee</span><span class="p">),</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice removes a pointer of the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name where the pointer will be removed</span>
+<span class="w">    </span><span class="c1">/// @param key the key of the pointer</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_pointer</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice removes multiple pointers of the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name where the pointers will be removed</span>
+<span class="w">    </span><span class="c1">/// @param keys a set of pointer keys</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_pointers</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice removes all pointers of the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name where the pointers will be removed</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_all_pointers</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice revokes a single AENS name wrapped in the NFT, removes metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name to revoke</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">revoke_single</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice revokes multiple AENS names wrapped in the NFT, removes metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="c1">/// @param names the AENS names to revoke</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">revoke_multiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice revokes all AENS names wrapped in the NFT, removes metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT where the AENS name is wrapped into</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">revoke_all</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of name to match expiry of already wrapped names</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_single</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers multiple AENS names to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
+<span class="w">    </span><span class="c1">/// @param names the AENS names to transfer</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_multiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers a single AENS name to another NFT by updating metadata of both NFTs, updates expiry of names to match expiry of already wrapped names</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_old the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param nft_id_new the id of the NFT that will wrap the AENS name in the future</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_all</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers the AENS name back to the owner or to another defined recipient, updates metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param name the AENS name to transfer</span>
+<span class="w">    </span><span class="c1">/// @param recipient the address that should receive the AENS name</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">unwrap_single</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers the AENS names back to the owner or to another defined recipient, updates metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param names the AENS names to transfer</span>
+<span class="w">    </span><span class="c1">/// @param recipient the address that should receive the AENS name</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">unwrap_multiple</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">string</span><span class="p">),</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers all AENS names back to the owner or to another defined recipient, updates metadata</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that currently wraps the AENS name</span>
+<span class="w">    </span><span class="c1">/// @param recipient the address that should receive the AENS name</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">unwrap_all</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">address</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller sets global config for NFTs owned by the caller</span>
+<span class="w">    </span><span class="c1">/// @param config the global config</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller removes global config for NFTs owned by the caller</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_global_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller sets NFT specific config</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to set the config</span>
+<span class="w">    </span><span class="c1">/// @param config the nft specific config</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">set_nft_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="nc">AENSWrappingTypes</span><span class="p">.</span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller removes NFT specific config</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to remove the config from</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">remove_nft_config</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller deposits AE to his reward pool</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">payable</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">deposit_to_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice caller withdraws all AE or a specific amount from his reward pool</span>
+<span class="w">    </span><span class="c1">/// @param amount the optional amount of AE to withdraw</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">withdraw_from_reward_pool</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">option</span><span class="p">(</span><span class="kt">int</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice calculates the reward based on the expiration date of the names wrapped in an NFT, considering the global config (or the NFT specific config if set) and the amount of Æ deposited by the NFT owner</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to extend</span>
+<span class="w">    </span><span class="c1">/// @return the estimated reward</span>
+<span class="w">    </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">estimate_reward</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
+
+<span class="w">    </span><span class="c1">/// @notice extends all AENS names wrapped in the NFT without getting a reward</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that wraps the AENS names to extend</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">extend_all</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice extends all AENS names wrapped in the NFT and distributes a reward to the caller</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT that wraps the AENS names to extend</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">extend_all_for_reward</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice transfers a set of NFTs to the desired recipient</span>
+<span class="w">    </span><span class="c1">/// @param recipient the address to become new owner of the NFTs</span>
+<span class="w">    </span><span class="c1">/// @param nft_ids the ids of the NFTs to transfer</span>
+<span class="w">    </span><span class="c1">/// @param data optional data to be provided to a contract receiver</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">transfer_multiple_nfts</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">address</span><span class="p">,</span><span class="w"> </span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="p">),</span><span class="w"> </span><span class="kt">option</span><span class="p">(</span><span class="kt">string</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice burns a set of NFTs (only possible if AENS names are expired)</span>
+<span class="w">    </span><span class="c1">/// @param nft_ids the ids of the NFTs to burn</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">burn_multiple_nfts</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="nc">Set</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="kt">int</span><span class="p">))</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">unit</span>
+
+<span class="w">    </span><span class="c1">/// @notice triggers the migration of an NFT that exists in the old AENSWrapping contract (if set during deployment) and mints a new NFT in this contract</span>
+<span class="w">    </span><span class="c1">/// @param nft_id the id of the NFT to migrate</span>
+<span class="w">    </span><span class="c1">/// @return the id of the NFT minted in this contract</span>
+<span class="w">    </span><span class="k">stateful</span><span class="w"> </span><span class="k">entrypoint</span><span class="w"> </span><span class="n">trigger_migration</span><span class="w"> </span><span class="ow">:</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="w"> </span><span class="ow">=&gt;</span><span class="w"> </span><span class="kt">int</span>
 </code></pre></div>
 
 
