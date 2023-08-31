@@ -1192,6 +1192,19 @@ describe('AENSWrapping', () => {
         assert.deepEqual(nameInstance.pointers, []);
       });
 
+      it('non ASCII chars work as expected', async () => {
+        const nonAsciiNames = ["приветприветпривет.chain", "bücherregal.chain", "æternityisgreat.chain"];
+        await claimNames(nonAsciiNames);
+        const nonAsciiNamesDelegationSigs = await getDelegationSignatures(nonAsciiNames, contractId);
+        const nftId = (await contract.wrap_and_mint(nonAsciiNamesDelegationSigs)).decodedResult;
+        let nonAsciiMetadata = (await contract.metadata(nftId)).decodedResult.MetadataMap[0];
+        assert.deepEqual(nonAsciiMetadata, getExpectedNftMetadataMap(nonAsciiNames));
+        await contract.unwrap_multiple(nftId, nonAsciiNames);
+        nonAsciiMetadata = (await contract.metadata(nftId)).decodedResult.MetadataMap[0];
+        assert.deepEqual(nonAsciiMetadata, new Map());
+        await contract.burn(nftId);
+      });
+
       it('migration', async () => {
         const admin = (await contract.get_admin()).decodedResult;
         assert.equal(admin, aeSdk.selectedAddress);
