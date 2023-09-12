@@ -100,6 +100,11 @@ sequenceDiagram
     AENSWrapping (NFT Contract) -->> User XY: transfer of all AENS names wrapped in NFT with id 2
 ```
 
+## Deployments
+
+* testnet: [ct_uzVp6Y8yrHumrbWVtmqTSUdHz59ByeTCMJUnaD2S9WSYEus8a](https://testnet.aescan.io/contracts/ct_uzVp6Y8yrHumrbWVtmqTSUdHz59ByeTCMJUnaD2S9WSYEus8a)
+* mainnet: [ct_M14j2hVwDqSraKqwi9udj31NM4f3SGYPXC7UDVqKqfoeUUjX2](https://aescan.io/contracts/ct_M14j2hVwDqSraKqwi9udj31NM4f3SGYPXC7UDVqKqfoeUUjX2)
+
 ## Sponsors
 
 This work is sponsored by the [æternity crypto foundation](https://www.aeternity-foundation.org).
