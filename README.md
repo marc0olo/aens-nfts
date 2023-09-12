@@ -117,6 +117,10 @@ Tests & artifacts:
 * [aci-iris.json](./development/smart-contracts/generated_artifacts/aci-iris.json) (contract interface generated via [generateBytecodeAndAci-iris.js](./development/smart-contracts/scripts/generateBytecodeAndAci-iris.js))
 * [bytecode-iris](./development/smart-contracts/generated_artifacts/bytecode-iris) (contract bytecode generated via [generateBytecodeAndAci-iris.js](./development/smart-contracts/scripts/generateBytecodeAndAci-iris.js))
 
+Deployments:
+* testnet: [ct_uzVp6Y8yrHumrbWVtmqTSUdHz59ByeTCMJUnaD2S9WSYEus8a](https://testnet.aescan.io/contracts/ct_uzVp6Y8yrHumrbWVtmqTSUdHz59ByeTCMJUnaD2S9WSYEus8a)
+* mainnet: [ct_M14j2hVwDqSraKqwi9udj31NM4f3SGYPXC7UDVqKqfoeUUjX2](https://aescan.io/contracts/ct_M14j2hVwDqSraKqwi9udj31NM4f3SGYPXC7UDVqKqfoeUUjX2)
+
 
 ### Ceres (future protocol version)
 
