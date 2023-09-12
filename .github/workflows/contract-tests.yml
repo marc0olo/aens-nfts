@@ -1,5 +1,8 @@
 name: Smart Contract Tests
-on: [push]
+on:
+  push:
+    branches: ['main','develop']
+    paths: ['development/smart-contracts/**']
 
 defaults:
   run:
